@@ -213,6 +213,26 @@ def create_list_of_NOL(amount_NOL: int):
     return List_of_NOL
 
 #funkcja uzupełnienia dannych w objektach klasy NOL w zależności od podanych atrybutów
+def insert_value_to_objekts_in_list_of_NOL(lista_z_objektami_NOL: list):
+    if len(lista_z_objektami_NOL) == 0:
+        print("Error in function insert_value_to_objekts_in_list_of_NOL")
+    else:
+        for objekt in lista_z_objektami_NOL:
+            objekt.set_X(random.uniform(-100000, 100000))#dlugość w metrach
+            objekt.set_Y(random.uniform(-100000, 100000))
+            objekt.set_Z(random.uniform(-100000, 100000))
+            objekt.set_szerokosc(random.uniform(0.1, 100))
+            objekt.set_dludosc(random.uniform(0.1, 100))
+            objekt.set_waga(random.uniform(0.01, 100000))#waga w kg
+            objekt.set_minimalna_predkosc(random.uniform(0, 10000))#w m/s
+            objekt.set_maksymalna_predkosc(random.uniform(0, 10000))
+            objekt.set_odpornosc_na_bron(random.uniform(0, 100))
+            objekt.set_obecnosc_broni(random.choice([True, False]))
+
+
+
+
+
 
 
 
@@ -239,4 +259,6 @@ if __name__ == "__main__":
     # MAX_list_lenhgt_is = test_max_list_size()  # Tęn wiersz jest czenścą programu ale polecam go zostawić zakomentowanym jeżeli nie ma na to beżpośredniego zapotrzebowania ponieważ na niewydajnych kompóterach może potrwać od kilku minut do kilku dni. Kod został dostosowany do braku tego parametru i domuszlnie podejrzewano że maksymalna długość listy to 10**4 składającej z ekzemplarów klasów. Podany program został przetestowany na komputerze z procesorem "Ryzen Threadripper 7980X" + 512Gbt RAM ddr5 RDIMM z ECC sk hyniX i maksymalnie uzyskana wartość to MAX_list_lenhgt_is == 2 012 936 090 biórác pod uwagé że taka metoda nie optymalna ale ma większą precyzyjność i prosta w walidacji. Oczywiście można by było używać bazy dannuch takiej jak SQLite i wtedy zależność od pamięcia operacyjnej nie będzie taka istotna
     list_of_NOL = create_list_of_NOL(20)
     print(list_of_NOL[0].get_all_parameters())
-    print("")
+    insert_value_to_objekts_in_list_of_NOL(list_of_NOL)
+    print(list_of_NOL[0].get_all_parameters())
+
