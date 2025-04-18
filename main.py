@@ -212,6 +212,10 @@ def create_list_of_NOL(amount_NOL: int):
                 List_of_NOL.append(NOL())
     return List_of_NOL
 
+#funkcja uzupełnienia dannych w objektach klasy NOL w zależności od podanych atrybutów
+
+
+
 
 # punkt wejśćiowy do programu
 if __name__ == "__main__":
