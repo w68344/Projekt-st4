@@ -1,6 +1,7 @@
 # sekcja importowania niezbędnych bibliotek
 import random
 
+
 # sekcja ręcznie stwożonych funcij do walidacji
 def is_value_integer(wartosc_do_sprawdzenia):
     if isinstance(wartosc_do_sprawdzenia, int):
@@ -46,6 +47,9 @@ def is_value_str_and_lengh_of_value_more_than_1_character(wartosc_do_sprawdzenia
         return False
 
 
+
+
+
 # tworzenie klasa NOL z konstruktorem, walidacją, geterami i setereami
 # versja 0.0.1
 class NOL:
@@ -55,9 +59,9 @@ class NOL:
                  odpornosc_na_bron=None,
                  obecnosc_broni=None):
         # domyślnie jednostki miary traktowane są jako jednostki miary układu SI (o podstawie 10^0*JEDNOSTKA jeżeli nie będzie to specjalnie podano inaczej)
-        self.X = X  #Położenie odnośnie położenia BP w Prawo
-        self.Y = Y  #Położenie odnośnie położenia BP W Lewo
-        self.Z = Z  #Położenie odnośnie położenia BP w Góre
+        self.X = X  # Położenie odnośnie położenia BP w Prawo
+        self.Y = Y  # Położenie odnośnie położenia BP W Lewo
+        self.Z = Z  # Położenie odnośnie położenia BP w Góre
         self.szerokosc = szerokosc  # szerokość OL
         self.dludosc = dludosc  # dludosc OL
         self.waga = waga  # waga OL
@@ -70,6 +74,21 @@ class NOL:
         self.obecnosc_broni = obecnosc_broni  # obecnosc_broni na NOL
 
     # getery z funkcjonalnością (opcjonalnie)
+    def get_all_parameters(self): #Master geter
+        print(f"X: {self.X}")
+        print(f"Y: {self.Y}")
+        print(f"Z: {self.Z}")
+        print(f"Szerokosc: {self.szerokosc}")
+        print(f"Dludosc: {self.dludosc}")
+        print(f"Waga: {self.waga}")
+        print(f"Typ: {self.typ}")
+        print(f"Minimalna predkosc: {self.minimalna_predkosc}")
+        print(f"Maksymalna predkosc: {self.maksymalna_predkosc}")
+        print(f"Maksymalne przeszpisenie: {self.maksymalne_przeszpisenie}")
+        print(f"Powirchnia projekcyjna: {self.powirchnia_projekcyjna}")
+        print(f"Odpornosc na bron: {self.odpornosc_na_bron}")
+        print(f"Obecnosc broni: {self.obecnosc_broni}")
+
     def get_X(self):
         return self.X
 
@@ -184,17 +203,36 @@ class NOL:
             print("Error in function set_obecnosc_broni")
 
 
-#fukcja do tworzenia zbiorów NOL
+# fukcja do tworzenia zbiorów NOL
 
 def create_list_of_NOL(amount_NOL: int):
-    if isinstance(amount_NOL, int):
-        for i in range(0, amount_NOL):
-            print("Nothing")
+    List_of_NOL = []
+    if is_value_integer(amount_NOL) and is_value_biger_than_0(amount_NOL) and (amount_NOL<MAX_list_lenhgt_is):  # walidacja typu podawanej zmiennej oraz sprawdzenie czy liczba jest większa od zera        for i in range(0, amount_NOL):
+            for a in range(0,amount_NOL):
+                List_of_NOL.append(NOL())
+    return List_of_NOL
 
 
 # punkt wejśćiowy do programu
 if __name__ == "__main__":
-    NOL1 = NOL(
-        szerokosc=5,
-        dludosc=5,
-    )
+    # wstępne testowanie systemu
+    # funcja do sprawdzenia maksymalnych możliwośći kompótera w przetwarżaniu dużych zbiorów dannych złaszcia zmiennych typu List z wartościami typu Class
+    def test_max_list_size():
+        size = 10 ** 6  # начнём с миллиона
+        step = 10 ** 6  # шаг увеличения
+        while True:
+            try:
+                test_list = [NOL()] * size
+                print(f"Успешно создан список длиной {size}")
+                print(test_list)
+                size += step
+            except MemoryError:
+                print(f"ОШИБКА ПАМЯТИ при попытке создать список длиной {size}")
+                return size
+
+
+    MAX_list_lenhgt_is = 10**5
+    # MAX_list_lenhgt_is = test_max_list_size()  # Tęn wiersz jest czenścą programu ale polecam go zostawić zakomentowanym jeżeli nie ma na to beżpośredniego zapotrzebowania ponieważ na niewydajnych kompóterach może potrwać od kilku minut do kilku dni. Kod został dostosowany do braku tego parametru i domuszlnie podejrzewano że maksymalna długość listy to 10**4 składającej z ekzemplarów klasów. Podany program został przetestowany na komputerze z procesorem "Ryzen Threadripper 7980X" + 512Gbt RAM ddr5 RDIMM z ECC sk hyniX i maksymalnie uzyskana wartość to MAX_list_lenhgt_is == 2 012 936 090 biórác pod uwagé że taka metoda nie optymalna ale ma większą precyzyjność i prosta w walidacji. Oczywiście można by było używać bazy dannuch takiej jak SQLite i wtedy zależność od pamięcia operacyjnej nie będzie taka istotna
+    list_of_NOL = create_list_of_NOL(20)
+    print(list_of_NOL[0].get_all_parameters())
+    print("")
