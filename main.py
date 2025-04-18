@@ -165,3 +165,4 @@ if __name__ == "__main__":
         szerokosc=5,
         dludosc=5,
     )
+    #test
