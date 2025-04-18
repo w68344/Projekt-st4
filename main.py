@@ -1,4 +1,5 @@
 # sekcja importowania niezbędnych bibliotek
+import random
 
 # sekcja ręcznie stwożonych funcij do walidacji
 def is_value_integer(wartosc_do_sprawdzenia):
@@ -46,14 +47,17 @@ def is_value_str_and_lengh_of_value_more_than_1_character(wartosc_do_sprawdzenia
 
 
 # tworzenie klasa NOL z konstruktorem, walidacją, geterami i setereami
-#versja 0.0.1
+# versja 0.0.1
 class NOL:
-    def __init__(self, szerokosc=None, dludosc=None, waga=None, typ=None,
+    def __init__(self, X=None, Y=None, Z=None, szerokosc=None, dludosc=None, waga=None, typ=None,
                  minimalna_predkosc=None, maksymalna_predkosc=None,
                  maksymalne_przeszpisenie=None, powirchnia_projekcyjna=None,
                  odpornosc_na_bron=None,
                  obecnosc_broni=None):
         # domyślnie jednostki miary traktowane są jako jednostki miary układu SI (o podstawie 10^0*JEDNOSTKA jeżeli nie będzie to specjalnie podano inaczej)
+        self.X = X  #Położenie odnośnie położenia BP w Prawo
+        self.Y = Y  #Położenie odnośnie położenia BP W Lewo
+        self.Z = Z  #Położenie odnośnie położenia BP w Góre
         self.szerokosc = szerokosc  # szerokość OL
         self.dludosc = dludosc  # dludosc OL
         self.waga = waga  # waga OL
@@ -66,6 +70,15 @@ class NOL:
         self.obecnosc_broni = obecnosc_broni  # obecnosc_broni na NOL
 
     # getery z funkcjonalnością (opcjonalnie)
+    def get_X(self):
+        return self.X
+
+    def get_Y(self):
+        return self.Y
+
+    def get_Z(self):
+        return self.Z
+
     def get_szerokosc(self):
         return self.szerokosc
 
@@ -97,6 +110,18 @@ class NOL:
         return self.obecnosc_broni
 
     # setery z walidacją(opcjonalnie)
+    def set_X(self, value):
+        if is_value_integer(value) == True or is_value_float(value) == True:
+            self.X = value
+
+    def set_Y(self, value):
+        if is_value_integer(value) == True or is_value_float(value) == True:
+            self.Y = value
+
+    def set_Z(self, value):
+        if is_value_integer(value) == True or is_value_float(value) == True:
+            self.Z = value
+
     def set_szerokosc(self, value):  # wymiary długośći będą podawane w 10^1*mm czyli w cantymetrach
         if (is_value_integer(value) == True or is_value_float(value) == True) and is_value_biger_than_0(value) == True:
             self.szerokosc = value
@@ -159,12 +184,17 @@ class NOL:
             print("Error in function set_obecnosc_broni")
 
 
+#fukcja do tworzenia zbiorów NOL
+
+def create_list_of_NOL(amount_NOL: int):
+    if isinstance(amount_NOL, int):
+        for i in range(0, amount_NOL):
+            print("Nothing")
+
+
 # punkt wejśćiowy do programu
 if __name__ == "__main__":
     NOL1 = NOL(
         szerokosc=5,
         dludosc=5,
     )
-    #test
-    #test2
-    #test from laptop
