@@ -47,9 +47,6 @@ def is_value_str_and_lengh_of_value_more_than_1_character(wartosc_do_sprawdzenia
         return False
 
 
-
-
-
 # tworzenie klasa NOL z konstruktorem, walidacją, geterami i setereami
 # versja 0.0.1
 class NOL:
@@ -74,7 +71,7 @@ class NOL:
         self.obecnosc_broni = obecnosc_broni  # obecnosc_broni na NOL
 
     # getery z funkcjonalnością (opcjonalnie)
-    def get_all_parameters(self): #Master geter
+    def get_all_parameters(self):  # Master geter
         print(f"X: {self.X}")
         print(f"Y: {self.Y}")
         print(f"Z: {self.Z}")
@@ -207,39 +204,57 @@ class NOL:
 
 def create_list_of_NOL(amount_NOL: int):
     List_of_NOL = []
-    if is_value_integer(amount_NOL) and is_value_biger_than_0(amount_NOL) and (amount_NOL<MAX_list_lenhgt_is):  # walidacja typu podawanej zmiennej oraz sprawdzenie czy liczba jest większa od zera        for i in range(0, amount_NOL):
-            for a in range(0,amount_NOL):
-                List_of_NOL.append(NOL())
+    if is_value_integer(amount_NOL) and is_value_biger_than_0(amount_NOL) and (
+            amount_NOL <= MAX_list_lenhgt_is):  # walidacja typu podawanej zmiennej oraz sprawdzenie czy liczba jest większa od zera        for i in range(0, amount_NOL):
+        for a in range(0, amount_NOL):
+            List_of_NOL.append(NOL())
+        else:
+            print("Error in function create_list_of_NOL")
     return List_of_NOL
 
-#funkcja uzupełnienia dannych w objektach klasy NOL w zależności od podanych atrybutów
+
+# funkcja uzupełnienia dannych w objektach klasy NOL w zależności od podanych atrybutów
+
+#wspomagającja funkcja do tworzenia unikalnych osobnych zmiennych:
+
+def generate_unikal_wartosc_od_minus_10000_do_plus_10000():
+    used_values = []
+    for i in range(0,2):
+        value = random.uniform(-10000,10000)
+        if value not in used_values:
+            used_values.append(value)
+
+
+
 def insert_value_to_objekts_in_list_of_NOL(lista_z_objektami_NOL: list):
     if len(lista_z_objektami_NOL) == 0:
         print("Error in function insert_value_to_objekts_in_list_of_NOL")
     else:
         for objekt in lista_z_objektami_NOL:
-            objekt.set_X(random.uniform(-100000, 100000))#dlugość w metrach
+            objekt.set_X(random.uniform(-100000, 100000))  # dlugość w metrach Wartości nie mogą się powtarazać
             objekt.set_Y(random.uniform(-100000, 100000))
             objekt.set_Z(random.uniform(-100000, 100000))
             objekt.set_szerokosc(random.uniform(0.1, 100))
             objekt.set_dludosc(random.uniform(0.1, 100))
-            objekt.set_waga(random.uniform(0.01, 100000))#waga w kg
-            objekt.set_minimalna_predkosc(random.uniform(0, 10000))#w m/s
+            objekt.set_waga(random.uniform(0.01, 100000))  # waga w kg
+            objekt.set_minimalna_predkosc(random.uniform(0, 10000))  # w m/s
             objekt.set_maksymalna_predkosc(1)
-            while objekt.get_maksymalna_predkosc()<objekt.get_minimalna_predkosc():
+            while objekt.get_maksymalna_predkosc() < objekt.get_minimalna_predkosc():
                 objekt.set_maksymalna_predkosc(random.uniform(0, 10000))
             objekt.set_odpornosc_na_bron(random.randint(1, 100))
             objekt.set_obecnosc_broni(random.choice([True, False]))
-            objekt.set_maksymalne_przeszpisenie(random.uniform(1,50))#m/s^2
-            objekt.set_powirchnia_projekcyjna((objekt.get_dludosc() * objekt.get_szerokosc())*random.uniform(0.2,1))#m^2
+            objekt.set_maksymalne_przeszpisenie(random.uniform(1, 50))  # m/s^2
+            objekt.set_powirchnia_projekcyjna(
+                (objekt.get_dludosc() * objekt.get_szerokosc()) * random.uniform(0.2, 1))  # m^2
 
 
+# funkcja do opracowania i symulacji przemieszczenia objektów w przesztrzeni powietrznej dokoła położenia BP które domyszlnie jest ustawione jako położenie X;Y;Z = 0;0;0;
 
-
-
-
-
-
+def fukcja_ruchu_NOL(lista_NOL: list):
+    # validacja podanej listy
+    if len(lista_NOL) > 0:
+        if lista_NOL[0].get_X != None:
+            print("вяшфф")
 
 
 # punkt wejśćiowy do programu
@@ -248,7 +263,7 @@ if __name__ == "__main__":
     # funcja do sprawdzenia maksymalnych możliwośći kompótera w przetwarżaniu dużych zbiorów dannych złaszcia zmiennych typu List z wartościami typu Class
     def test_max_list_size():
         size = 10 ** 6  # начнём с миллиона
-        step = 10 ** 6  # шаг увеличения
+        step = 10 ** 2  # шаг увеличения
         while True:
             try:
                 test_list = [NOL()] * size
@@ -260,11 +275,10 @@ if __name__ == "__main__":
                 return size
 
 
-    MAX_list_lenhgt_is = 10**5
-    # MAX_list_lenhgt_is = test_max_list_size()  # Tęn wiersz jest czenścą programu ale polecam go zostawić zakomentowanym jeżeli nie ma na to beżpośredniego zapotrzebowania ponieważ na niewydajnych kompóterach może potrwać od kilku minut do kilku dni. Kod został dostosowany do braku tego parametru i domuszlnie podejrzewano że maksymalna długość listy to 10**4 składającej z ekzemplarów klasów. Podany program został przetestowany na komputerze z procesorem "Ryzen Threadripper 7980X" + 512Gbt RAM ddr5 RDIMM z ECC sk hyniX i maksymalnie uzyskana wartość to MAX_list_lenhgt_is == 2 012 936 090 biórác pod uwagé że taka metoda nie optymalna ale ma większą precyzyjność i prosta w walidacji. Oczywiście można by było używać bazy dannuch takiej jak SQLite i wtedy zależność od pamięcia operacyjnej nie będzie taka istotna
-    list_of_NOL = create_list_of_NOL(20)
+    MAX_list_lenhgt_is = 10 ** 5
+    # MAX_list_lenhgt_is = test_max_list_size()  # Tęn wiersz jest czenścą programu ale polecam go zakomentowac jeżeli nie ma na to beżpośredniego zapotrzebowania ponieważ na niewydajnych kompóterach może potrwać od kilku minut do kilku dni. Kod został dostosowany do braku tego parametru i domuszlnie podejrzewano że maksymalna długość listy to 10**4 składającej z ekzemplarów klasów. Podany program został przetestowany na komputerze z procesorem "Ryzen Threadripper 7980X" + 512Gbt RAM ddr5 RDIMM z ECC sk hyniX i maksymalnie uzyskana wartość to MAX_list_lenhgt_is == 2 012 936 090 biórác pod uwagé że taka metoda nie optymalna ale ma większą precyzyjność i prosta w walidacji. Oczywiście można by było używać bazy dannuch takiej jak SQLite i wtedy zależność od pamięcia operacyjnej nie będzie taka istotna
+    list_of_NOL = create_list_of_NOL(MAX_list_lenhgt_is)
     print(list_of_NOL[0].get_all_parameters())
     insert_value_to_objekts_in_list_of_NOL(list_of_NOL)
     for a in list_of_NOL:
-        print(a.get_all_parameters())
-
+        print(a.get_X())
