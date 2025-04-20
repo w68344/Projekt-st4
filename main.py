@@ -259,12 +259,30 @@ def insert_value_to_objekts_in_list_of_NOL(lista_z_objektami_NOL: list):
 
 # funkcja do opracowania i symulacji przemieszczenia objektów w przesztrzeni powietrznej dokoła położenia BP które domyszlnie jest ustawione jako położenie X;Y;Z = 0;0;0;
 
-def fukcja_ruchu_NOL(lista_NOL: list):
+def fukcja_ruchu_NOL(lista_NOL: list, Start_index : int, End_index : int):
+    start_index = None
+    end_index = None
+    #validacja prezdziału
+    if is_value_integer(Start_index) and is_value_integer(End_index):
+        #validacja liczby
+        if Start_index<End_index:
+            start_index = Start_index
+            end_index = End_index
+        else:
+            print("Error in fukcja_ruchu_NOL in validacja liczby")
+            return None
+    else:
+        print("Error in fukcja_ruchu_NOL in validacja prezdziału")
+
+
     # validacja podanej listy
     if len(lista_NOL) > 0:
-        if lista_NOL[0].get_X != None:
-            print("вяшфф")
-
+        for valid_index in range(start_index, end_index):
+            if lista_NOL[valid_index].get_X != None:
+                # debug print
+                print(lista_NOL[valid_index].get_all_parameters())
+    else:
+        print("Error in function fukcja_ruchu_NOL")
 #funkcja do testowania z dużym obczążeniem
 
 def cpu_stress_task(i):
@@ -313,6 +331,7 @@ if __name__ == "__main__":
                 return size
 
     #funkcja do badania ilości możliwych jednocześnie pracezdatnych wątków w systemie
+    #Użycie wieluwątkowego programowania (P_U02 , P_U04)
     def test_max_thread_in_system_V1(): #funcja dla sprawdzenia bardzo łatwych procesów potrzebujączych niestotną ilość fizycznych zasobów
         import threading
         import time
@@ -345,10 +364,11 @@ if __name__ == "__main__":
 
 
     #sektor badania systemu
-    # MAX_list_lenhgt_is = test_max_list_size()  # Tęn wiersz jest czenścą programu ale polecam go zakomentowac jeżeli nie ma na to beżpośredniego zapotrzebowania ponieważ na niewydajnych kompóterach może potrwać od kilku minut do kilku dni. Kod został dostosowany do braku tego parametru i domuszlnie podejrzewano że maksymalna długość listy to 10**4 składającej z ekzemplarów klasów. Podany program został przetestowany na komputerze z procesorem "Ryzen Threadripper 7980X" + 512Gbt RAM ddr5 RDIMM z ECC sk hyniX i maksymalnie uzyskana wartość to MAX_list_lenhgt_is == 2 012 936 090 biórác pod uwagé że taka metoda nie optymalna ale ma większą precyzyjność i prosta w walidacji. Oczywiście można by było używać bazy dannuch takiej jak SQLite i wtedy zależność od pamięcia operacyjnej nie będzie taka istotna
+    # MAX_list_lenhgt_is = test_max_list_size()  # Tęn wiersz jest czenścą programu ale polecam go zakomentowac jeżeli nie ma na to beżpośredniego zapotrzebowania ponieważ na niewydajnych kompóterach może potrwać od kilku minut do kilku dni. Kod został dostosowany do braku tego parametru i domuszlnie podejrzewano że maksymalna długość listy to 10**4 składającej z ekzemplarów klasów. Podany program został przetestowany na komputerze z procesorem "Ryzen Threadripper 7980X" + 512Gbt RAM ddr5 RDIMM z ECC sk hyniX OC Windows Server i maksymalnie uzyskana wartość to MAX_list_lenhgt_is == 2 012 936 090 biórác pod uwagé że taka metoda nie optymalna ale ma większą precyzyjność i prostsza w walidacji. Oczywiście można by było używać bazy dannuch takiej jak SQLite i wtedy zależność od pamięcia operacyjnej nie będzie taka istotna
     # MAX_threads_in_sysytem_V1 = test_max_thread_in_system_V1()
-    MAX_threads_in_sysytem_V2 = run_stress_test_V2()
-    print(MAX_threads_in_sysytem_V2)
+    # MAX_threads_in_sysytem_V2 = run_stress_test_V2() # Tęn wiersz jest czenścą programu ale polecam go zakomentowac jeżeli nie ma na to beżpośredniego zapotrzebowania ponieważ na niewydajnych kompóterach może potrwać od kilku minut do kilku dni. Kod został dostosowany do braku tego parametru i domuszlnie podejrzewano że maksymalna ilość procesów może być od 15 do 20. Podany program został przetestowany na komputerze z procesorem "Ryzen Threadripper 7980X" + 512Gbt RAM ddr5 RDIMM z ECC sk hyniX OC Windows Server i maksymalnie uzyskana wartość to MMAX_threads_in_sysytem_V2 == 45 407 biórác pod uwagé że taka metoda nie optymalna i wydajność zmiejsza po uzyskaniu 128 procesów ponieważ processor ma 128 osobnych wątków pozostałe procesy są wykonywane przez przerywanie z użyciem "infinity fabrik" AMD(r).
+    MAX_threads_in_sysytem_V2 = 20
+    MAX_threads_in_sysytem_V1 = 15
     MAX_list_lenhgt_is = 10 ** 5
 
 
@@ -356,5 +376,5 @@ if __name__ == "__main__":
     LIST_OF_NOL = create_list_of_NOL(30) #DUŻY NAPIS ZBIORU EKZEMPLARÓW KLASY NOL OZANCZA ŻE TO GŁÓWNA KLASA NAD KTÓRĄ BĘDĄ PRZEPROWADZANA OPERACJE
     print(LIST_OF_NOL[0].get_all_parameters())
     insert_value_to_objekts_in_list_of_NOL(LIST_OF_NOL)
-    print(LIST_OF_NOL[0].get_all_parameters())
-    fukcja_ruchu_NOL(LIST_OF_NOL)
+    # print(LIST_OF_NOL[0].get_all_parameters())
+    fukcja_ruchu_NOL(LIST_OF_NOL, 6,3)
