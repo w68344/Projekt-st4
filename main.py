@@ -1,5 +1,8 @@
 # sekcja importowania niezbędnych bibliotek
 import random
+import multiprocessing
+import time
+import math
 
 
 # sekcja ręcznie stwożonych funcij do walidacji
@@ -204,36 +207,42 @@ class NOL:
 
 def create_list_of_NOL(amount_NOL: int):
     List_of_NOL = []
-    if is_value_integer(amount_NOL) and is_value_biger_than_0(amount_NOL) and (
-            amount_NOL <= MAX_list_lenhgt_is):  # walidacja typu podawanej zmiennej oraz sprawdzenie czy liczba jest większa od zera        for i in range(0, amount_NOL):
+    if is_value_integer(amount_NOL) and is_value_biger_than_0(amount_NOL) and (amount_NOL <= MAX_list_lenhgt_is):  # walidacja typu podawanej zmiennej oraz sprawdzenie czy liczba jest większa od zera        for i in range(0, amount_NOL):
         for a in range(0, amount_NOL):
             List_of_NOL.append(NOL())
-        else:
-            print("Error in function create_list_of_NOL")
+    else:
+        print("Error in function create_list_of_NOL")
     return List_of_NOL
 
 
 # funkcja uzupełnienia dannych w objektach klasy NOL w zależności od podanych atrybutów
 
-#wspomagającja funkcja do tworzenia unikalnych osobnych zmiennych:
+#wspomagającja funkcja do tworzenia unikalnych osobnych zmiennych w wyznaczonym zakresie:
 
-def generate_unikal_wartosc_od_minus_10000_do_plus_10000():
+def generate_unikal_wartosc_od_minus_10000_do_plus_10000(amount:int):
     used_values = []
-    for i in range(0,2):
+    for i in range(0,amount):
         value = random.uniform(-10000,10000)
         if value not in used_values:
             used_values.append(value)
-
+    return used_values
 
 
 def insert_value_to_objekts_in_list_of_NOL(lista_z_objektami_NOL: list):
     if len(lista_z_objektami_NOL) == 0:
         print("Error in function insert_value_to_objekts_in_list_of_NOL")
     else:
+        lista_zkiennych_X = generate_unikal_wartosc_od_minus_10000_do_plus_10000(len(lista_z_objektami_NOL))
+        lista_zmiennych_Y = generate_unikal_wartosc_od_minus_10000_do_plus_10000(len(lista_z_objektami_NOL))
+        lista_zmiennych_Z = generate_unikal_wartosc_od_minus_10000_do_plus_10000(len(lista_z_objektami_NOL))
         for objekt in lista_z_objektami_NOL:
-            objekt.set_X(random.uniform(-100000, 100000))  # dlugość w metrach Wartości nie mogą się powtarazać
-            objekt.set_Y(random.uniform(-100000, 100000))
-            objekt.set_Z(random.uniform(-100000, 100000))
+            objekt.set_X(lista_zkiennych_X[-1])  # dlugość w metrach. Wartości nie mogą się powtarazać
+            lista_zkiennych_X.pop(-1)
+            # print(len(lista_zkiennych_X)) #debag string print
+            objekt.set_Y(lista_zmiennych_Y[-1])  # dlugość w metrach. Wartości nie mogą się powtarazać
+            lista_zmiennych_Y.pop(-1)
+            objekt.set_Z(lista_zmiennych_Z[-1])  # dlugość w metrach. Wartości nie mogą się powtarazać
+            lista_zmiennych_Z.pop(-1)
             objekt.set_szerokosc(random.uniform(0.1, 100))
             objekt.set_dludosc(random.uniform(0.1, 100))
             objekt.set_waga(random.uniform(0.01, 100000))  # waga w kg
@@ -256,10 +265,39 @@ def fukcja_ruchu_NOL(lista_NOL: list):
         if lista_NOL[0].get_X != None:
             print("вяшфф")
 
+#funkcja do testowania z dużym obczążeniem
+
+def cpu_stress_task(i):
+    print(f"Process {i} started")
+    while True:
+        math.sqrt(i ** 2 + time.time() % 1000)
+
+def run_stress_test_V2(delay_between_processes=0.1):
+    multiprocessing.set_start_method("spawn", force=True)
+    max_processes = 0
+    processes = []
+
+    try:
+        while True:
+            p = multiprocessing.Process(target=cpu_stress_task, args=(max_processes,))
+            p.start()
+            processes.append(p)
+            max_processes += 1
+            time.sleep(delay_between_processes)
+    except Exception as e:
+        print(f"\n❌ Ошибка при запуске процесса #{max_processes}: {e}")
+
+    print(f"\n✅ Максимальное количество процессов: {max_processes}")
+
+    for p in processes:
+        p.terminate()
+    return max_processes
+
+
 
 # punkt wejśćiowy do programu
 if __name__ == "__main__":
-    # wstępne testowanie systemu
+    # sektor wstępnego testowania systemu i ustawienie odpowiednich ustawień wieluwątkowości oraz parametrów skomlikowaności zbiorów
     # funcja do sprawdzenia maksymalnych możliwośći kompótera w przetwarżaniu dużych zbiorów dannych złaszcia zmiennych typu List z wartościami typu Class
     def test_max_list_size():
         size = 10 ** 6  # начнём с миллиона
@@ -274,11 +312,49 @@ if __name__ == "__main__":
                 print(f"ОШИБКА ПАМЯТИ при попытке создать список длиной {size}")
                 return size
 
+    #funkcja do badania ilości możliwych jednocześnie pracezdatnych wątków w systemie
+    def test_max_thread_in_system_V1(): #funcja dla sprawdzenia bardzo łatwych procesów potrzebujączych niestotną ilość fizycznych zasobów
+        import threading
+        import time
 
-    MAX_list_lenhgt_is = 10 ** 5
+        def test_task(i):
+            print(f"Thread {i} started")
+            time.sleep(1)
+            print(f"Thread {i} finished")
+
+        max_threads = 0
+        threads = []
+
+        try:
+            while True:
+                t = threading.Thread(target=test_task, args=(max_threads,))
+                t.start()
+                threads.append(t)
+                max_threads += 1
+        except Exception as e:
+            print(f"Ошибка при запуске потока #{max_threads}: {e}")
+
+        # Подождём завершения всех потоков
+        for t in threads:
+            t.join()
+
+        print(f"Максимальное количество потоков перед сбоем: {max_threads}")
+        return max_threads
+
+
+
+
+    #sektor badania systemu
     # MAX_list_lenhgt_is = test_max_list_size()  # Tęn wiersz jest czenścą programu ale polecam go zakomentowac jeżeli nie ma na to beżpośredniego zapotrzebowania ponieważ na niewydajnych kompóterach może potrwać od kilku minut do kilku dni. Kod został dostosowany do braku tego parametru i domuszlnie podejrzewano że maksymalna długość listy to 10**4 składającej z ekzemplarów klasów. Podany program został przetestowany na komputerze z procesorem "Ryzen Threadripper 7980X" + 512Gbt RAM ddr5 RDIMM z ECC sk hyniX i maksymalnie uzyskana wartość to MAX_list_lenhgt_is == 2 012 936 090 biórác pod uwagé że taka metoda nie optymalna ale ma większą precyzyjność i prosta w walidacji. Oczywiście można by było używać bazy dannuch takiej jak SQLite i wtedy zależność od pamięcia operacyjnej nie będzie taka istotna
-    list_of_NOL = create_list_of_NOL(MAX_list_lenhgt_is)
-    print(list_of_NOL[0].get_all_parameters())
-    insert_value_to_objekts_in_list_of_NOL(list_of_NOL)
-    for a in list_of_NOL:
-        print(a.get_X())
+    # MAX_threads_in_sysytem_V1 = test_max_thread_in_system_V1()
+    MAX_threads_in_sysytem_V2 = run_stress_test_V2()
+    print(MAX_threads_in_sysytem_V2)
+    MAX_list_lenhgt_is = 10 ** 5
+
+
+    # początek programu
+    LIST_OF_NOL = create_list_of_NOL(30) #DUŻY NAPIS ZBIORU EKZEMPLARÓW KLASY NOL OZANCZA ŻE TO GŁÓWNA KLASA NAD KTÓRĄ BĘDĄ PRZEPROWADZANA OPERACJE
+    print(LIST_OF_NOL[0].get_all_parameters())
+    insert_value_to_objekts_in_list_of_NOL(LIST_OF_NOL)
+    print(LIST_OF_NOL[0].get_all_parameters())
+    fukcja_ruchu_NOL(LIST_OF_NOL)
