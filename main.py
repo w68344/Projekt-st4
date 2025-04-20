@@ -225,9 +225,14 @@ def insert_value_to_objekts_in_list_of_NOL(lista_z_objektami_NOL: list):
             objekt.set_dludosc(random.uniform(0.1, 100))
             objekt.set_waga(random.uniform(0.01, 100000))#waga w kg
             objekt.set_minimalna_predkosc(random.uniform(0, 10000))#w m/s
-            objekt.set_maksymalna_predkosc(random.uniform(0, 10000))
-            objekt.set_odpornosc_na_bron(random.uniform(0, 100))
+            objekt.set_maksymalna_predkosc(1)
+            while objekt.get_maksymalna_predkosc()<objekt.get_minimalna_predkosc():
+                objekt.set_maksymalna_predkosc(random.uniform(0, 10000))
+            objekt.set_odpornosc_na_bron(random.randint(1, 100))
             objekt.set_obecnosc_broni(random.choice([True, False]))
+            objekt.set_maksymalne_przeszpisenie(random.uniform(1,50))#m/s^2
+            objekt.set_powirchnia_projekcyjna((objekt.get_dludosc() * objekt.get_szerokosc())*random.uniform(0.2,1))#m^2
+
 
 
 
@@ -260,5 +265,6 @@ if __name__ == "__main__":
     list_of_NOL = create_list_of_NOL(20)
     print(list_of_NOL[0].get_all_parameters())
     insert_value_to_objekts_in_list_of_NOL(list_of_NOL)
-    print(list_of_NOL[0].get_all_parameters())
+    for a in list_of_NOL:
+        print(a.get_all_parameters())
 
