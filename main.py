@@ -290,8 +290,21 @@ def fukcja_ruchu_NOL(lista_NOL: list, Start_index: int, End_index: int): #funkcj
         objekt.set_Y(objekt.get_Y() + (objekt.get_minimalna_predkosc() + ((objekt.get_maksymalne_przeszpisenie() * random.uniform(0, 1)) / 10)))
         objekt.set_Z(objekt.get_Z() + (objekt.get_minimalna_predkosc() + ((objekt.get_maksymalne_przeszpisenie() * random.uniform(0, 1)) / 10)))
 
+#funkcja do wypisywania przedziałów dla podania jako parametry w nastempnych funkcjach
+def ranres_of_indexes(my_list:list,threads :int):
+    length = len(my_list)
+    chunk_size = length // threads  # 10
+    remainder = length % threads    # 0
 
+    start = 0
+    ranges = []
 
+    for i in range(threads):
+        # Если остаток есть, добавляем по 1 элементу к первым частям (не нужно тут, т.к. 30 % 3 == 0)
+        end = start + chunk_size + (1 if i < remainder else 0)
+        ranges.append((start, end))
+        start = end
+    return ranges
 # funkcja do testowania z dużym obczążeniem
 
 def cpu_stress_task(i):
@@ -375,20 +388,19 @@ if __name__ == "__main__":
     # MAX_list_lenhgt_is = test_max_list_size()  # Tęn wiersz jest czenścą programu ale polecam go zakomentowac jeżeli nie ma na to beżpośredniego zapotrzebowania ponieważ na niewydajnych kompóterach może potrwać od kilku minut do kilku dni. Kod został dostosowany do braku tego parametru i domuszlnie podejrzewano że maksymalna długość listy to 10**4 składającej z ekzemplarów klasów. Podany program został przetestowany na komputerze z procesorem "Ryzen Threadripper 7980X" + 512Gbt RAM ddr5 RDIMM z ECC sk hyniX OC Windows Server i maksymalnie uzyskana wartość to MAX_list_lenhgt_is == 2 012 936 090 biórác pod uwagé że taka metoda nie optymalna ale ma większą precyzyjność i prostsza w walidacji. Oczywiście można by było używać bazy dannuch takiej jak SQLite i wtedy zależność od pamięcia operacyjnej nie będzie taka istotna
     # MAX_threads_in_sysytem_V1 = test_max_thread_in_system_V1()
     # MAX_threads_in_sysytem_V2 = run_stress_test_V2() # Tęn wiersz jest czenścą programu ale polecam go zakomentowac jeżeli nie ma na to beżpośredniego zapotrzebowania ponieważ na niewydajnych kompóterach może potrwać od kilku minut do kilku dni. Kod został dostosowany do braku tego parametru i domuszlnie podejrzewano że maksymalna ilość procesów może być od 15 do 20. Podany program został przetestowany na komputerze z procesorem "Ryzen Threadripper 7980X" + 512Gbt RAM ddr5 RDIMM z ECC sk hyniX OC Windows Server i maksymalnie uzyskana wartość to MMAX_threads_in_sysytem_V2 == 45 407 biórác pod uwagé że taka metoda nie optymalna i wydajność zmiejsza po uzyskaniu 128 procesów ponieważ processor ma 128 osobnych wątków pozostałe procesy są wykonywane przez przerywanie z użyciem "infinity fabrik" AMD(r).
-    MAX_threads_in_sysytem_V2 = 20
-    MAX_threads_in_sysytem_V1 = 15
+    MAX_threads_in_sysytem_V2 = 5
+    MAX_threads_in_sysytem_V1 = 5
     MAX_list_lenhgt_is = 50
-    MAX_threads_in_sysytem = max(MAX_threads_in_sysytem_V1,MAX_threads_in_sysytem_V2)
-    MAX_ojects_for_single_thread = MAX_list_lenhgt_is / MAX_threads_in_sysytem
+    MAX_threads_in_sysytem = min(MAX_threads_in_sysytem_V1,MAX_threads_in_sysytem_V2)
 
 
     # początek programu
     LIST_OF_NOL = create_list_of_NOL(MAX_list_lenhgt_is)  # DUŻY NAPIS ZMIENNEJ ZBIORU EKZEMPLARÓW KLASY NOL OZANCZA ŻE TO GŁÓWNA KLASA NAD KTÓRĄ BĘDĄ PRZEPROWADZANA OPERACJE
+    ranges_for_threads = ranres_of_indexes(LIST_OF_NOL, MAX_threads_in_sysytem)
+    print(ranges_for_threads)
     # print(LIST_OF_NOL[0].get_all_parameters())
     # insert_value_to_objekts_in_list_of_NOL(LIST_OF_NOL)
     # print(LIST_OF_NOL[0].get_all_parameters())
     # fukcja_ruchu_NOL(LIST_OF_NOL, 3, 6)
     # print(LIST_OF_NOL[0].get_all_parameters())
-    print(MAX_ojects_for_single_thread)
-
 
