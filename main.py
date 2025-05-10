@@ -3,6 +3,7 @@ import random
 import multiprocessing
 import time
 import math
+from multiprocessing import Process
 
 
 # sekcja ręcznie stwożonych funcij do walidacji
@@ -257,10 +258,10 @@ def insert_value_to_objekts_in_list_of_NOL(lista_z_objektami_NOL: list):
             objekt.set_powirchnia_projekcyjna(
                 (objekt.get_dludosc() * objekt.get_szerokosc()) * random.uniform(0.2, 1))  # m^2
 
+ # funkcja do opracowania i symulacji przemieszczenia objektów w przesztrzeni powietrznej dokoła położenia BP które domyszlnie jest ustawione jako położenie X;Y;Z = 0;0;0;
 
-# funkcja do opracowania i symulacji przemieszczenia objektów w przesztrzeni powietrznej dokoła położenia BP które domyszlnie jest ustawione jako położenie X;Y;Z = 0;0;0;
-
-def fukcja_ruchu_NOL(lista_NOL: list, Start_index: int, End_index: int): #funkcja jest obliczona tak że liczy zmiane położenia o co 0.1s w zależności od parametrów NOL
+def fukcja_ruchu_NOL(lista_NOL: list, Start_index: int,
+                     End_index: int):  # funkcja jest obliczona tak że liczy zmiane położenia o co 0.1s w zależności od parametrów NOL
     start_index = None
     end_index = None
     # validacja prezdziału
@@ -278,17 +279,26 @@ def fukcja_ruchu_NOL(lista_NOL: list, Start_index: int, End_index: int): #funkcj
     # validacja podanej listy
     if len(lista_NOL) > 0:
         for valid_index in range(start_index, end_index):
-            if lista_NOL[valid_index].get_X == None:
+            if lista_NOL[valid_index].get_X() == None:
                 print("objekt w lista nie ma podanej wartośći X")
+            if lista_NOL[valid_index].get_Y() == None:
+                print("objekt w lista nie ma podanej wartośći Y")
+            if lista_NOL[valid_index].get_Z() == None:
+                print("objekt w lista nie ma podanej wartośći Z")
                 # debug print
                 # print(lista_NOL[valid_index].get_all_parameters())
     else:
         print("Error in function fukcja_ruchu_NOL")
     # funkcja zmiany położenia NOL w przedziale 0.1s
     for objekt in lista_NOL:
-        objekt.set_X(objekt.get_X() + (objekt.get_minimalna_predkosc() + ((objekt.get_maksymalne_przeszpisenie() * random.uniform(0, 1)) / 10)))
-        objekt.set_Y(objekt.get_Y() + (objekt.get_minimalna_predkosc() + ((objekt.get_maksymalne_przeszpisenie() * random.uniform(0, 1)) / 10)))
-        objekt.set_Z(objekt.get_Z() + (objekt.get_minimalna_predkosc() + ((objekt.get_maksymalne_przeszpisenie() * random.uniform(0, 1)) / 10)))
+        objekt.set_X(objekt.get_X() + (objekt.get_minimalna_predkosc() + (
+                    (objekt.get_maksymalne_przeszpisenie() * random.uniform(0, 1)) / 10)))
+        objekt.set_Y(objekt.get_Y() + (objekt.get_minimalna_predkosc() + (
+                    (objekt.get_maksymalne_przeszpisenie() * random.uniform(0, 1)) / 10)))
+        objekt.set_Z(objekt.get_Z() + (objekt.get_minimalna_predkosc() + (
+                    (objekt.get_maksymalne_przeszpisenie() * random.uniform(0, 1)) / 10)))
+
+
 
 #funkcja do wypisywania przedziałów dla podania jako parametry w nastempnych funkcjach
 def ranres_of_indexes(my_list:list,threads :int):
@@ -337,6 +347,8 @@ def run_stress_test_V2(delay_between_processes=0.1):
 
 # punkt wejśćiowy do programu
 if __name__ == "__main__":
+
+
     # sektor wstępnego testowania systemu i ustawienie odpowiednich ustawień wieluwątkowości oraz parametrów skomlikowaności zbiorów
     # funcja do sprawdzenia maksymalnych możliwośći kompótera w przetwarżaniu dużych zbiorów dannych złaszcia zmiennych typu List z wartościami typu Class
     def test_max_list_size():
@@ -399,8 +411,19 @@ if __name__ == "__main__":
     ranges_for_threads = ranres_of_indexes(LIST_OF_NOL, MAX_threads_in_sysytem)
     print(ranges_for_threads)
     # print(LIST_OF_NOL[0].get_all_parameters())
-    # insert_value_to_objekts_in_list_of_NOL(LIST_OF_NOL)
+    insert_value_to_objekts_in_list_of_NOL(LIST_OF_NOL)
     # print(LIST_OF_NOL[0].get_all_parameters())
     # fukcja_ruchu_NOL(LIST_OF_NOL, 3, 6)
     # print(LIST_OF_NOL[0].get_all_parameters())
+    # print(LIST_OF_NOL[0].get_X())
+
+    processes = []
+    for r in range(0,MAX_threads_in_sysytem):
+        print("a")
+        p = Process(target=fukcja_ruchu_NOL, args=(LIST_OF_NOL, ranges_for_threads[r][0], ranges_for_threads[r][1]))
+        p.start()
+        processes.append(p)
+
+    for p in processes:
+        p.join()
 
