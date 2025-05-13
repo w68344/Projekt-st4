@@ -54,10 +54,8 @@ def is_value_str_and_lengh_of_value_more_than_1_character(wartosc_do_sprawdzenia
 # versja 0.0.1
 class NOL:
     def __init__(self, X=None, Y=None, Z=None, szerokosc=None, dludosc=None, waga=None, typ=None,
-                 minimalna_predkosc=None, maksymalna_predkosc=None,
-                 maksymalne_przeszpisenie=None, powirchnia_projekcyjna=None,
-                 odpornosc_na_bron=None,
-                 obecnosc_broni=None):
+                 minimalna_predkosc=None, maksymalna_predkosc=None, maksymalne_przeszpisenie=None,
+                 powirchnia_projekcyjna=None, odpornosc_na_bron=None, obecnosc_broni=None):
         # domyślnie jednostki miary traktowane są jako jednostki miary układu SI (o podstawie 10^0*JEDNOSTKA jeżeli nie będzie to specjalnie podano inaczej)
         self.X = X  # Położenie odnośnie położenia BP w Prawo
         self.Y = Y  # Położenie odnośnie położenia BP W Lewo
@@ -283,14 +281,14 @@ def fukcja_ruchu_NOL(
             objekt.set_X(objekt.get_X() + (objekt.get_minimalna_predkosc() + (
                     (objekt.get_maksymalne_przeszpisenie() * random.uniform(0, 1)) / 10)))
             print(f"Parametr X dla objektu: {objekt} zmieniono z {differense_X} na {objekt.get_X()} ")
-            differense_Y = objekt.get_Y()
+            # differense_Y = objekt.get_Y()
             objekt.set_Y(objekt.get_Y() + (objekt.get_minimalna_predkosc() + (
                     (objekt.get_maksymalne_przeszpisenie() * random.uniform(0, 1)) / 10)))
-            print(f"Parametr Y dla objektu: {objekt} zmieniono z {differense_Y} na {objekt.get_Y()} ")
-            differense_Z = objekt.get_Z()
+            # print(f"Parametr Y dla objektu: {objekt} zmieniono z {differense_Y} na {objekt.get_Y()} ")
+            # differense_Z = objekt.get_Z()
             objekt.set_Z(objekt.get_Z() + (objekt.get_minimalna_predkosc() + (
                     (objekt.get_maksymalne_przeszpisenie() * random.uniform(0, 1)) / 10)))
-            print(f"Parametr Z dla objektu: {objekt} zmieniono z {differense_Z} na {objekt.get_Z()} ")
+            # print(f"Parametr Z dla objektu: {objekt} zmieniono z {differense_Z} na {objekt.get_Z()} ")
 
     interval = 0.1  # 100 ms Dyskretny odztęp czasowy w celu unikęcia chazardu i niezawidnośći sprszętu fizycznego. Wiem że ten przedział przeba zrobić jaknajmniejszy w celu uliepszenia działania systemu i zbliżenia go do systemu analogowego.
     next_time = time.time()
@@ -302,9 +300,19 @@ def fukcja_ruchu_NOL(
         if sleep_time > 0:
             time.sleep(sleep_time)
         else:
-            #technizny prin w celu wyłapywania niezdołności systemu z powodu nieoptymalizcji lub nizkiej częstotliwości taktowania procesora.
+            # technizny prin w celu wyłapywania niezdołności systemu z powodu nieoptymalizcji lub nizkiej częstotliwości taktowania procesora.
             print("⚠️ Timer was droped!")
             next_time = time.time()
+
+
+# funkcja analizy NOL i przypisanie typu do NOL. Klasyfikator będzie bardzo prosty i będzie klasyfikował tylko na 2 typy "dobry" "NIE dobry". Nie będzie
+def funkcja_analizy_i_przypisywanie_typu_do_ekzemplarow_objektow_w_zbiorze_NOL(objekt):
+    if objekt.get_powirchnia_projekcyjna() <= 15:
+        objekt.set_typ("dobry")
+        # print(objekt.get_typ())
+    else:
+        objekt.set_typ("NIE dobry")
+        # print(objekt.get_typ())
 
 
 # funkcja do wypisywania przedziałów dla podania jako parametry w nastempnych funkcjach
@@ -406,20 +414,29 @@ if __name__ == "__main__":
     # początek programu
     LIST_OF_NOL = create_list_of_NOL(
         MAX_list_lenhgt_is)  # DUŻY NAPIS ZMIENNEJ ZBIORU EKZEMPLARÓW KLASY NOL OZANCZA ŻE TO GŁÓWNA KLASA NAD KTÓRĄ BĘDĄ PRZEPROWADZANA OPERACJE
-    insert_value_to_objekts_in_list_of_NOL(LIST_OF_NOL)
+    insert_value_to_objekts_in_list_of_NOL(
+        LIST_OF_NOL)  # losowe podanie parametrów w pewnych przedziałach wyznaczonych wychodząc z założeń logichnych i ograniczeń szwiata rzeczywistego.
+    for objekt in LIST_OF_NOL:  # pętla do przypisywania typu do objektów
+        funkcja_analizy_i_przypisywanie_typu_do_ekzemplarow_objektow_w_zbiorze_NOL(objekt)
+    print(f"ilość objektów przed sortowaniem = {len(LIST_OF_NOL)}")
+    for objekt in LIST_OF_NOL:
+        if objekt.get_typ() == "dobry":
+            LIST_OF_NOL.remove(objekt)
+    print(f"ilość objektów po usunięciu dobrych objektów = {len(LIST_OF_NOL)}")
+
     SEPARATED_LIST_OF_NOL = seperated_list_of_NOL(LIST_OF_NOL, MAX_threads_in_sysytem)
-    # fukcja_ruchu_NOL(SEPARATED_LIST_OF_NOL[0])
-    Lista_aktywnych_procesow = []
-    for number_of_thread in range(0, MAX_threads_in_sysytem):
-        proces = multiprocessing.Process(target=fukcja_ruchu_NOL, args=(SEPARATED_LIST_OF_NOL[number_of_thread],))
-        Lista_aktywnych_procesow.append(proces)
-        proces.start()
-        print(f"proces number {number_of_thread}, z PID = {proces.pid} was started now")
 
+    # Lista_aktywnych_procesow = []
+    # for number_of_thread in range(0, MAX_threads_in_sysytem):
+    #     proces = multiprocessing.Process(target=fukcja_ruchu_NOL, args=(SEPARATED_LIST_OF_NOL[number_of_thread],))
+    #     Lista_aktywnych_procesow.append(proces)
+    #     proces.start()
+    #     print(f"proces number {number_of_thread}, z PID = {proces.pid} was started now")
+    #
+    # time.sleep(1)
+    # for p in Lista_aktywnych_procesow:
+    #     print(f"Proces zakonczono PID={p.pid}")
+    #     p.terminate()
+    #     p.join()
 
-    time.sleep(10)
-    for p in Lista_aktywnych_procesow:
-        print(f"Proces zakonczono PID={p.pid}")
-        p.terminate()
-        # p.join()
 
