@@ -1,9 +1,8 @@
 # sekcja importowania niezbędnych bibliotek
 import random
 import multiprocessing
-import time
 import math
-from multiprocessing import Process
+import time
 
 
 # sekcja ręcznie stwożonych funcij do walidacji
@@ -258,27 +257,14 @@ def insert_value_to_objekts_in_list_of_NOL(lista_z_objektami_NOL: list):
             objekt.set_powirchnia_projekcyjna(
                 (objekt.get_dludosc() * objekt.get_szerokosc()) * random.uniform(0.2, 1))  # m^2
 
- # funkcja do opracowania i symulacji przemieszczenia objektów w przesztrzeni powietrznej dokoła położenia BP które domyszlnie jest ustawione jako położenie X;Y;Z = 0;0;0;
 
-def fukcja_ruchu_NOL(lista_NOL: list, Start_index: int,
-                     End_index: int):  # funkcja jest obliczona tak że liczy zmiane położenia o co 0.1s w zależności od parametrów NOL
-    start_index = None
-    end_index = None
-    # validacja prezdziału
-    if is_value_integer(Start_index) and is_value_integer(End_index):
-        # validacja liczby
-        if Start_index < End_index:
-            start_index = Start_index
-            end_index = End_index
-        else:
-            print("Error in fukcja_ruchu_NOL in validacja liczby")
-            return None
-    else:
-        print("Error in fukcja_ruchu_NOL in validacja prezdziału")
+# funkcja do opracowania i symulacji przemieszczenia objektów w przesztrzeni powietrznej dokoła położenia BP które domyszlnie jest ustawione jako położenie X;Y;Z = 0;0;0;
 
+def fukcja_ruchu_NOL(
+        lista_NOL: list):  # funkcja jest obliczona tak że liczy zmiane położenia o co 0.1s w zależności od parametrów NOL
     # validacja podanej listy
     if len(lista_NOL) > 0:
-        for valid_index in range(start_index, end_index):
+        for valid_index in range(0, len(lista_NOL)):
             if lista_NOL[valid_index].get_X() == None:
                 print("objekt w lista nie ma podanej wartośći X")
             if lista_NOL[valid_index].get_Y() == None:
@@ -289,33 +275,46 @@ def fukcja_ruchu_NOL(lista_NOL: list, Start_index: int,
                 # print(lista_NOL[valid_index].get_all_parameters())
     else:
         print("Error in function fukcja_ruchu_NOL")
-    # funkcja zmiany położenia NOL w przedziale 0.1s
-    for objekt in lista_NOL:
-        objekt.set_X(objekt.get_X() + (objekt.get_minimalna_predkosc() + (
+
+    def Zmiana_poolozenia():
+        # funkcja zmiany położenia NOL w przedziale 0.1s
+        for objekt in lista_NOL:
+            differense_X = objekt.get_X()
+            objekt.set_X(objekt.get_X() + (objekt.get_minimalna_predkosc() + (
                     (objekt.get_maksymalne_przeszpisenie() * random.uniform(0, 1)) / 10)))
-        objekt.set_Y(objekt.get_Y() + (objekt.get_minimalna_predkosc() + (
+            print(f"Parametr X dla objektu: {objekt} zmieniono z {differense_X} na {objekt.get_X()} ")
+            differense_Y = objekt.get_Y()
+            objekt.set_Y(objekt.get_Y() + (objekt.get_minimalna_predkosc() + (
                     (objekt.get_maksymalne_przeszpisenie() * random.uniform(0, 1)) / 10)))
-        objekt.set_Z(objekt.get_Z() + (objekt.get_minimalna_predkosc() + (
+            print(f"Parametr Y dla objektu: {objekt} zmieniono z {differense_Y} na {objekt.get_Y()} ")
+            differense_Z = objekt.get_Z()
+            objekt.set_Z(objekt.get_Z() + (objekt.get_minimalna_predkosc() + (
                     (objekt.get_maksymalne_przeszpisenie() * random.uniform(0, 1)) / 10)))
+            print(f"Parametr Z dla objektu: {objekt} zmieniono z {differense_Z} na {objekt.get_Z()} ")
+
+    interval = 0.1  # 100 ms Dyskretny odztęp czasowy w celu unikęcia chazardu i niezawidnośći sprszętu fizycznego. Wiem że ten przedział przeba zrobić jaknajmniejszy w celu uliepszenia działania systemu i zbliżenia go do systemu analogowego.
+    next_time = time.time()
+
+    while True:
+        Zmiana_poolozenia()
+        next_time += interval
+        sleep_time = next_time - time.time()
+        if sleep_time > 0:
+            time.sleep(sleep_time)
+        else:
+            #technizny prin w celu wyłapywania niezdołności systemu z powodu nieoptymalizcji lub nizkiej częstotliwości taktowania procesora.
+            print("⚠️ Timer was droped!")
+            next_time = time.time()
 
 
+# funkcja do wypisywania przedziałów dla podania jako parametry w nastempnych funkcjach
+def seperated_list_of_NOL(my_list: list, threads: int):
+    k, m = divmod(len(my_list), threads)
+    return [my_list[i * k + min(i, m):(i + 1) * k + min(i + 1, m)] for i in range(threads)]
 
-#funkcja do wypisywania przedziałów dla podania jako parametry w nastempnych funkcjach
-def ranres_of_indexes(my_list:list,threads :int):
-    length = len(my_list)
-    chunk_size = length // threads  # 10
-    remainder = length % threads    # 0
 
-    start = 0
-    ranges = []
-
-    for i in range(threads):
-        # Если остаток есть, добавляем по 1 элементу к первым частям (не нужно тут, т.к. 30 % 3 == 0)
-        end = start + chunk_size + (1 if i < remainder else 0)
-        ranges.append((start, end))
-        start = end
-    return ranges
 # funkcja do testowania z dużym obczążeniem
+
 
 def cpu_stress_task(i):
     print(f"Process {i} started")
@@ -347,7 +346,6 @@ def run_stress_test_V2(delay_between_processes=0.1):
 
 # punkt wejśćiowy do programu
 if __name__ == "__main__":
-
 
     # sektor wstępnego testowania systemu i ustawienie odpowiednich ustawień wieluwątkowości oraz parametrów skomlikowaności zbiorów
     # funcja do sprawdzenia maksymalnych możliwośći kompótera w przetwarżaniu dużych zbiorów dannych złaszcia zmiennych typu List z wartościami typu Class
@@ -400,30 +398,28 @@ if __name__ == "__main__":
     # MAX_list_lenhgt_is = test_max_list_size()  # Tęn wiersz jest czenścą programu ale polecam go zakomentowac jeżeli nie ma na to beżpośredniego zapotrzebowania ponieważ na niewydajnych kompóterach może potrwać od kilku minut do kilku dni. Kod został dostosowany do braku tego parametru i domuszlnie podejrzewano że maksymalna długość listy to 10**4 składającej z ekzemplarów klasów. Podany program został przetestowany na komputerze z procesorem "Ryzen Threadripper 7980X" + 512Gbt RAM ddr5 RDIMM z ECC sk hyniX OC Windows Server i maksymalnie uzyskana wartość to MAX_list_lenhgt_is == 2 012 936 090 biórác pod uwagé że taka metoda nie optymalna ale ma większą precyzyjność i prostsza w walidacji. Oczywiście można by było używać bazy dannuch takiej jak SQLite i wtedy zależność od pamięcia operacyjnej nie będzie taka istotna
     # MAX_threads_in_sysytem_V1 = test_max_thread_in_system_V1()
     # MAX_threads_in_sysytem_V2 = run_stress_test_V2() # Tęn wiersz jest czenścą programu ale polecam go zakomentowac jeżeli nie ma na to beżpośredniego zapotrzebowania ponieważ na niewydajnych kompóterach może potrwać od kilku minut do kilku dni. Kod został dostosowany do braku tego parametru i domuszlnie podejrzewano że maksymalna ilość procesów może być od 15 do 20. Podany program został przetestowany na komputerze z procesorem "Ryzen Threadripper 7980X" + 512Gbt RAM ddr5 RDIMM z ECC sk hyniX OC Windows Server i maksymalnie uzyskana wartość to MMAX_threads_in_sysytem_V2 == 45 407 biórác pod uwagé że taka metoda nie optymalna i wydajność zmiejsza po uzyskaniu 128 procesów ponieważ processor ma 128 osobnych wątków pozostałe procesy są wykonywane przez przerywanie z użyciem "infinity fabrik" AMD(r).
-    MAX_threads_in_sysytem_V2 = 5
-    MAX_threads_in_sysytem_V1 = 5
-    MAX_list_lenhgt_is = 50
-    MAX_threads_in_sysytem = min(MAX_threads_in_sysytem_V1,MAX_threads_in_sysytem_V2)
-
+    MAX_threads_in_sysytem_V2 = 50
+    MAX_threads_in_sysytem_V1 = 50
+    MAX_list_lenhgt_is = 2000
+    MAX_threads_in_sysytem = min(MAX_threads_in_sysytem_V1, MAX_threads_in_sysytem_V2)
 
     # początek programu
-    LIST_OF_NOL = create_list_of_NOL(MAX_list_lenhgt_is)  # DUŻY NAPIS ZMIENNEJ ZBIORU EKZEMPLARÓW KLASY NOL OZANCZA ŻE TO GŁÓWNA KLASA NAD KTÓRĄ BĘDĄ PRZEPROWADZANA OPERACJE
-    ranges_for_threads = ranres_of_indexes(LIST_OF_NOL, MAX_threads_in_sysytem)
-    print(ranges_for_threads)
-    # print(LIST_OF_NOL[0].get_all_parameters())
+    LIST_OF_NOL = create_list_of_NOL(
+        MAX_list_lenhgt_is)  # DUŻY NAPIS ZMIENNEJ ZBIORU EKZEMPLARÓW KLASY NOL OZANCZA ŻE TO GŁÓWNA KLASA NAD KTÓRĄ BĘDĄ PRZEPROWADZANA OPERACJE
     insert_value_to_objekts_in_list_of_NOL(LIST_OF_NOL)
-    # print(LIST_OF_NOL[0].get_all_parameters())
-    # fukcja_ruchu_NOL(LIST_OF_NOL, 3, 6)
-    # print(LIST_OF_NOL[0].get_all_parameters())
-    # print(LIST_OF_NOL[0].get_X())
+    SEPARATED_LIST_OF_NOL = seperated_list_of_NOL(LIST_OF_NOL, MAX_threads_in_sysytem)
+    # fukcja_ruchu_NOL(SEPARATED_LIST_OF_NOL[0])
+    Lista_aktywnych_procesow = []
+    for number_of_thread in range(0, MAX_threads_in_sysytem):
+        proces = multiprocessing.Process(target=fukcja_ruchu_NOL, args=(SEPARATED_LIST_OF_NOL[number_of_thread],))
+        Lista_aktywnych_procesow.append(proces)
+        proces.start()
+        print(f"proces number {number_of_thread}, z PID = {proces.pid} was started now")
 
-    processes = []
-    for r in range(0,MAX_threads_in_sysytem):
-        print("a")
-        p = Process(target=fukcja_ruchu_NOL, args=(LIST_OF_NOL, ranges_for_threads[r][0], ranges_for_threads[r][1]))
-        p.start()
-        processes.append(p)
 
-    for p in processes:
-        p.join()
+    time.sleep(10)
+    for p in Lista_aktywnych_procesow:
+        print(f"Proces zakonczono PID={p.pid}")
+        p.terminate()
+        # p.join()
 
