@@ -307,7 +307,7 @@ def fukcja_ruchu_NOL(
 
 # funkcja analizy NOL i przypisanie typu do NOL. Klasyfikator będzie bardzo prosty i będzie klasyfikował tylko na 2 typy "dobry" "NIE dobry". Nie będzie
 def funkcja_analizy_i_przypisywanie_typu_do_ekzemplarow_objektow_w_zbiorze_NOL(objekt):
-    if objekt.get_powirchnia_projekcyjna() <= 15:
+    if objekt.get_powirchnia_projekcyjna() <= 15 or objekt.get_obecnosc_broni() == False:
         objekt.set_typ("dobry")
         # print(objekt.get_typ())
     else:
@@ -406,10 +406,12 @@ if __name__ == "__main__":
     # MAX_list_lenhgt_is = test_max_list_size()  # Tęn wiersz jest czenścą programu ale polecam go zakomentowac jeżeli nie ma na to beżpośredniego zapotrzebowania ponieważ na niewydajnych kompóterach może potrwać od kilku minut do kilku dni. Kod został dostosowany do braku tego parametru i domuszlnie podejrzewano że maksymalna długość listy to 10**4 składającej z ekzemplarów klasów. Podany program został przetestowany na komputerze z procesorem "Ryzen Threadripper 7980X" + 512Gbt RAM ddr5 RDIMM z ECC sk hyniX OC Windows Server i maksymalnie uzyskana wartość to MAX_list_lenhgt_is == 2 012 936 090 biórác pod uwagé że taka metoda nie optymalna ale ma większą precyzyjność i prostsza w walidacji. Oczywiście można by było używać bazy dannuch takiej jak SQLite i wtedy zależność od pamięcia operacyjnej nie będzie taka istotna
     # MAX_threads_in_sysytem_V1 = test_max_thread_in_system_V1()
     # MAX_threads_in_sysytem_V2 = run_stress_test_V2() # Tęn wiersz jest czenścą programu ale polecam go zakomentowac jeżeli nie ma na to beżpośredniego zapotrzebowania ponieważ na niewydajnych kompóterach może potrwać od kilku minut do kilku dni. Kod został dostosowany do braku tego parametru i domuszlnie podejrzewano że maksymalna ilość procesów może być od 15 do 20. Podany program został przetestowany na komputerze z procesorem "Ryzen Threadripper 7980X" + 512Gbt RAM ddr5 RDIMM z ECC sk hyniX OC Windows Server i maksymalnie uzyskana wartość to MMAX_threads_in_sysytem_V2 == 45 407 biórác pod uwagé że taka metoda nie optymalna i wydajność zmiejsza po uzyskaniu 128 procesów ponieważ processor ma 128 osobnych wątków pozostałe procesy są wykonywane przez przerywanie z użyciem "infinity fabrik" AMD(r).
-    MAX_threads_in_sysytem_V2 = 500
-    MAX_threads_in_sysytem_V1 = 500
+    MAX_threads_in_sysytem_V2 = 14
+    MAX_threads_in_sysytem_V1 = 14
     MAX_list_lenhgt_is = 20000
+    print(f"Maksymalna dugość listy NOL: {MAX_list_lenhgt_is}")
     MAX_threads_in_sysytem = min(MAX_threads_in_sysytem_V1, MAX_threads_in_sysytem_V2)
+    print(f"Maksymalna ilość osobnych wątków dostempnych w obecnie używanym systemie: {MAX_threads_in_sysytem}")
 
     # początek programu
     LIST_OF_NOL = create_list_of_NOL(
@@ -419,12 +421,14 @@ if __name__ == "__main__":
     for objekt in LIST_OF_NOL:  # pętla do przypisywania typu do objektów
         funkcja_analizy_i_przypisywanie_typu_do_ekzemplarow_objektow_w_zbiorze_NOL(objekt)
     print(f"ilość objektów przed sortowaniem = {len(LIST_OF_NOL)}")
-    for objekt in LIST_OF_NOL:
+    for objekt in LIST_OF_NOL: #pętla do usuwania "dobrych" NOL żeby zostały tylko NOLSZ
         if objekt.get_typ() == "dobry":
             LIST_OF_NOL.remove(objekt)
-    print(f"ilość objektów po usunięciu dobrych objektów = {len(LIST_OF_NOL)}")
+    print(f"ilość objektów po usunięciu \"dobrych\" objektów = {len(LIST_OF_NOL)}")
 
     SEPARATED_LIST_OF_NOL = seperated_list_of_NOL(LIST_OF_NOL, MAX_threads_in_sysytem)
+
+    print(f"LISTA_OF_NOL została podzielona na {MAX_threads_in_sysytem} przedziałów w każdym jest +-{len(SEPARATED_LIST_OF_NOL[0])} objektów ")
 
     Lista_aktywnych_procesow = []
     for number_of_thread in range(0, MAX_threads_in_sysytem):
@@ -433,10 +437,8 @@ if __name__ == "__main__":
         proces.start()
         print(f"proces number {number_of_thread}, z PID = {proces.pid} was started now")
 
-    time.sleep(20)
+    time.sleep(120)
     for p in Lista_aktywnych_procesow:
         print(f"Proces zakonczono PID={p.pid}")
         p.terminate()
         p.join()
-
-
