@@ -406,9 +406,9 @@ if __name__ == "__main__":
     # MAX_list_lenhgt_is = test_max_list_size()  # Tęn wiersz jest czenścą programu ale polecam go zakomentowac jeżeli nie ma na to beżpośredniego zapotrzebowania ponieważ na niewydajnych kompóterach może potrwać od kilku minut do kilku dni. Kod został dostosowany do braku tego parametru i domuszlnie podejrzewano że maksymalna długość listy to 10**4 składającej z ekzemplarów klasów. Podany program został przetestowany na komputerze z procesorem "Ryzen Threadripper 7980X" + 512Gbt RAM ddr5 RDIMM z ECC sk hyniX OC Windows Server i maksymalnie uzyskana wartość to MAX_list_lenhgt_is == 2 012 936 090 biórác pod uwagé że taka metoda nie optymalna ale ma większą precyzyjność i prostsza w walidacji. Oczywiście można by było używać bazy dannuch takiej jak SQLite i wtedy zależność od pamięcia operacyjnej nie będzie taka istotna
     # MAX_threads_in_sysytem_V1 = test_max_thread_in_system_V1()
     # MAX_threads_in_sysytem_V2 = run_stress_test_V2() # Tęn wiersz jest czenścą programu ale polecam go zakomentowac jeżeli nie ma na to beżpośredniego zapotrzebowania ponieważ na niewydajnych kompóterach może potrwać od kilku minut do kilku dni. Kod został dostosowany do braku tego parametru i domuszlnie podejrzewano że maksymalna ilość procesów może być od 15 do 20. Podany program został przetestowany na komputerze z procesorem "Ryzen Threadripper 7980X" + 512Gbt RAM ddr5 RDIMM z ECC sk hyniX OC Windows Server i maksymalnie uzyskana wartość to MMAX_threads_in_sysytem_V2 == 45 407 biórác pod uwagé że taka metoda nie optymalna i wydajność zmiejsza po uzyskaniu 128 procesów ponieważ processor ma 128 osobnych wątków pozostałe procesy są wykonywane przez przerywanie z użyciem "infinity fabrik" AMD(r).
-    MAX_threads_in_sysytem_V2 = 50
-    MAX_threads_in_sysytem_V1 = 50
-    MAX_list_lenhgt_is = 2000
+    MAX_threads_in_sysytem_V2 = 500
+    MAX_threads_in_sysytem_V1 = 500
+    MAX_list_lenhgt_is = 20000
     MAX_threads_in_sysytem = min(MAX_threads_in_sysytem_V1, MAX_threads_in_sysytem_V2)
 
     # początek programu
@@ -426,17 +426,17 @@ if __name__ == "__main__":
 
     SEPARATED_LIST_OF_NOL = seperated_list_of_NOL(LIST_OF_NOL, MAX_threads_in_sysytem)
 
-    # Lista_aktywnych_procesow = []
-    # for number_of_thread in range(0, MAX_threads_in_sysytem):
-    #     proces = multiprocessing.Process(target=fukcja_ruchu_NOL, args=(SEPARATED_LIST_OF_NOL[number_of_thread],))
-    #     Lista_aktywnych_procesow.append(proces)
-    #     proces.start()
-    #     print(f"proces number {number_of_thread}, z PID = {proces.pid} was started now")
-    #
-    # time.sleep(1)
-    # for p in Lista_aktywnych_procesow:
-    #     print(f"Proces zakonczono PID={p.pid}")
-    #     p.terminate()
-    #     p.join()
+    Lista_aktywnych_procesow = []
+    for number_of_thread in range(0, MAX_threads_in_sysytem):
+        proces = multiprocessing.Process(target=fukcja_ruchu_NOL, args=(SEPARATED_LIST_OF_NOL[number_of_thread],))
+        Lista_aktywnych_procesow.append(proces)
+        proces.start()
+        print(f"proces number {number_of_thread}, z PID = {proces.pid} was started now")
+
+    time.sleep(20)
+    for p in Lista_aktywnych_procesow:
+        print(f"Proces zakonczono PID={p.pid}")
+        p.terminate()
+        p.join()
 
 

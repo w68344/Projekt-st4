@@ -1,3 +1,5 @@
+import vispy
+vispy.use('pyqt5')
 import numpy as np
 from vispy import app, scene
 from vispy.visuals import markers
