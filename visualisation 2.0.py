@@ -1,11 +1,43 @@
+import matplotlib.animation as animation
+import matplotlib.pyplot as plt
+
+
+def animate_nol_movement(nol_list, steps=500, interval=100):
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+
+    scatter = ax.scatter([obj.get_X() for obj in nol_list],
+                         [obj.get_Y() for obj in nol_list],
+                         [obj.get_Z() for obj in nol_list])
+
+    ax.set_xlim(-10000, 10000)
+    ax.set_ylim(-10000, 10000)
+    ax.set_zlim(-10000, 10000)
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    ax.set_zlabel('Z')
+    ax.set_title('Ruch NOL - wizualizacja')
+
+    def update(frame):
+        # Логика движения из функции Zmiana_poolozenia()
+        for obj in nol_list:
+            obj.set_X(obj.get_X() + (obj.get_minimalna_predkosc() + (obj.get_maksymalne_przeszpisenie() * random.uniform(0, 1) / 10)))
+            obj.set_Y(obj.get_Y() + (obj.get_minimalna_predkosc() + (obj.get_maksymalne_przeszpisenie() * random.uniform(0, 1) / 10)))
+            obj.set_Z(obj.get_Z() + (obj.get_minimalna_predkosc() + (obj.get_maksymalne_przeszpisenie() * random.uniform(0, 1) / 10)))
+
+        scatter._offsets3d = ([obj.get_X() for obj in nol_list],
+                              [obj.get_Y() for obj in nol_list],
+                              [obj.get_Z() for obj in nol_list])
+        return scatter,
+
+    ani = animation.FuncAnimation(fig, update, frames=steps, interval=interval, blit=False)
+    plt.show()
+
 # sekcja importowania niezbędnych bibliotek
 import random
 import multiprocessing
 import math
 import time
-
-from fontTools.pens.basePen import NullPen
-from pydantic_core.core_schema import none_schema
 
 
 # sekcja ręcznie stwożonych funcij do walidacji
@@ -540,9 +572,9 @@ if __name__ == "__main__":
     # MAX_list_lenhgt_is = test_max_list_size()  # Tęn wiersz jest czenścą programu ale polecam go zakomentowac jeżeli nie ma na to beżpośredniego zapotrzebowania ponieważ na niewydajnych kompóterach może potrwać od kilku minut do kilku dni. Kod został dostosowany do braku tego parametru i domuszlnie podejrzewano że maksymalna długość listy to 10**4 składającej z ekzemplarów klasów. Podany program został przetestowany na komputerze z procesorem "Ryzen Threadripper 7980X" + 512Gbt RAM ddr5 RDIMM z ECC sk hyniX OC Windows Server i maksymalnie uzyskana wartość to MAX_list_lenhgt_is == 2 012 936 090 biórác pod uwagé że taka metoda nie optymalna ale ma większą precyzyjność i prostsza w walidacji. Oczywiście można by było używać bazy dannuch takiej jak SQLite i wtedy zależność od pamięcia operacyjnej nie będzie taka istotna
     # MAX_threads_in_sysytem_V1 = test_max_thread_in_system_V1()
     # MAX_threads_in_sysytem_V2 = run_stress_test_V2() # Tęn wiersz jest czenścą programu ale polecam go zakomentowac jeżeli nie ma na to beżpośredniego zapotrzebowania ponieważ na niewydajnych kompóterach może potrwać od kilku minut do kilku dni. Kod został dostosowany do braku tego parametru i domuszlnie podejrzewano że maksymalna ilość procesów może być od 15 do 20. Podany program został przetestowany na komputerze z procesorem "Ryzen Threadripper 7980X" + 512Gbt RAM ddr5 RDIMM z ECC sk hyniX OC Windows Server i maksymalnie uzyskana wartość to MMAX_threads_in_sysytem_V2 == 45 407 biórác pod uwagé że taka metoda nie optymalna i wydajność zmiejsza po uzyskaniu 128 procesów ponieważ processor ma 128 osobnych wątków pozostałe procesy są wykonywane przez przerywanie z użyciem "infinity fabrik" AMD(r).
-    MAX_threads_in_sysytem_V2 = 80
-    MAX_threads_in_sysytem_V1 = 80
-    MAX_list_lenhgt_is = 8000
+    MAX_threads_in_sysytem_V2 = 8
+    MAX_threads_in_sysytem_V1 = 8
+    MAX_list_lenhgt_is = 800
     print(f"Maksymalna dugość listy NOL: {MAX_list_lenhgt_is}")
     MAX_threads_in_sysytem = min(MAX_threads_in_sysytem_V1, MAX_threads_in_sysytem_V2)
     print(f"Maksymalna ilość osobnych wątków dostempnych w obecnie używanym systemie: {MAX_threads_in_sysytem}")
@@ -559,7 +591,7 @@ if __name__ == "__main__":
 
     print(
         f"LISTA_OF_NOL została podzielona na {MAX_threads_in_sysytem} przedziałów w każdym jest +-{len(SEPARATED_LIST_OF_NOL[0])} objektów ")
-
+    animate_nol_movement(SEPARATED_LIST_OF_NOL[0])
     Lista_aktywnych_procesow = []
     for number_of_thread in range(0, MAX_threads_in_sysytem):
         proces = multiprocessing.Process(target=fukcja_ruchu_NOL, args=(SEPARATED_LIST_OF_NOL[number_of_thread],))
