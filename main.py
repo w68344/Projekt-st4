@@ -4,6 +4,9 @@ import multiprocessing
 import math
 import time
 
+from fontTools.pens.basePen import NullPen
+from pydantic_core.core_schema import none_schema
+
 
 # sekcja ręcznie stwożonych funcij do walidacji
 def is_value_integer(wartosc_do_sprawdzenia):
@@ -200,36 +203,48 @@ class NOL:
         else:
             print("Error in function set_obecnosc_broni")
 
+
 class BP:
-    def __init__(self, predkosc_puli, ilosc_strszaluw_na_sekunde, ilosc_pul_w_magazynie, czas_naladowania_magazynu, kierunek_X, kierunek_Y, kierunek_Z, predkosc_porusznia):
-        #bazując na najbardziej rozpowszechnionym modelu BP instalowanym na okrętcie wójskowym "phalanx CIWS (Block 1b)" z niego wżęto patanetry BP
-        self.predkosc_puli = 1100 #m/s
-        self.ilosc_strszaluw_na_sekunde = 4000 #strsz/s
+    def __init__(self, maksymalna_distancja_robocza, predkosc_puli, ilosc_strszaluw_na_sekunde, ilosc_pul_w_magazynie,
+                 czas_naladowania_magazynu, kierunek_X, kierunek_Y, kierunek_Z, predkosc_porusznia, damge_per_strszal):
+        # bazując na najbardziej rozpowszechnionym modelu BP instalowanym na okrętcie wójskowym "phalanx CIWS (Block 1b)" z niego wżęto patanetry BP
+        self.maksymalna_distancja_robocza = 2000  # m
+        self.predkosc_puli = 1100  # m/s
+        self.ilosc_strszaluw_na_sekunde = 4000  # strsz/s
         self.ilosc_pul_w_magazynie = 2000
-        self.czas_naladowania_magazynu = 5 #sekund
-        #początkowy kierunek lufy działa będzie pionowo w góre
-        self.kierunek_X = 0
-        self.kierunek_Y = 0
-        self.kierunek_Z = 0
-        #maksymalna prędkość z którą może obracać BP woków siebie
-        self.predkosc_porusznia = 100 #stopień/s       czyli za 3.6 sekundy BP zrobi pełny obrót woków śiebie w pożiomie. Zakładam że prędkość obrotowa w poziomie rówma pędkości w pionie.
+        self.czas_naladowania_magazynu = 5  # sekund
+        self.damge_per_strszal = 5  # teoretyczny parametr dla wizualizacji zadanego obrażenia który będzie odejmowany od Ilości życia NOLSZ
+        # początkowy kierunek lufy działa będzie pionowo w góre
+        self.kierunek_X = 0  # m
+        self.kierunek_Y = 0  # m
+        self.kierunek_Z = 0  # m
+        # maksymalna prędkość z którą może obracać BP woków siebie
+        self.predkosc_porusznia = 100  # stopień/s       czyli za 3.6 sekundy BP zrobi pełny obrót woków śiebie w pożiomie. Zakładam że prędkość obrotowa w poziomie rówma pędkości w pionie.
+
+
 # fukcja do tworzenia zbiorów NOL
 
-def funkcja_wyszukiwania_najblizszego_objektu_odnosnie_polozenia_BP(lista_NOL_po_sortowaniu_na_osobne_procesy,number_of_thread : int):
-    robocza_lista = lista_NOL_po_sortowaniu_na_osobne_procesy[number_of_thread]
+
+# W moim systemie ja nie robie ogólnego API do sterowania jednostką BP i nie buduję system z myślą o zmieanie algorytmu pryoritetu aktaku na NOLSZ. jednostka będzie strzelać w najbliższy NOLSZ dopóki tę nie będzie zniszczony oraz nie będzie za daleko
+# funkcja do wyszukiwania nawbliższego NOLSZ
+def funkcja_wyszukiwania_najblizszego_objektu_odnosnie_polozenia_BP(lista_NOL_po_sortowaniu_na_osobne_procesy
+                                                            ):
+    robocza_lista = lista_NOL_po_sortowaniu_na_osobne_procesy
     closest_object = None
-    min_distance = float('inf')  # Начинаем с бесконечно большого расстояния
+    min_distance = float('inf')
 
     for obj in robocza_lista:
-        # Вычисляем расстояние до точки (0, 0, 0)
         distance = math.sqrt(obj.X ** 2 + obj.Y ** 2 + obj.Z ** 2)
 
-        # Если нашли объект ближе — обновляем
         if distance < min_distance:
             min_distance = distance
             closest_object = obj
     # print(f"Najbliższy objekt do punktu X=0 Y=0 Z=0 to {closest_object} który ma parametry: X={closest_object.X} Y={closest_object.Y} Z={closest_object.Z}")
     return closest_object
+
+
+
+
 
 def create_list_of_NOL(amount_NOL: int):
     List_of_NOL = []
@@ -284,6 +299,12 @@ def insert_value_to_objekts_in_list_of_NOL(lista_z_objektami_NOL: list):
                 (objekt.get_dludosc() * objekt.get_szerokosc()) * random.uniform(0.2, 1))  # m^2
 
 
+
+
+
+def funkcja_do_skierowania_BP_do_wybranego_celu(Main_target, punkt_alfa:list, punkt_omega:list):
+
+
 # funkcja do opracowania i symulacji przemieszczenia objektów w przesztrzeni powietrznej dokoła położenia BP które domyszlnie jest ustawione jako położenie X;Y;Z = 0;0;0;
 
 def fukcja_ruchu_NOL(
@@ -321,8 +342,17 @@ def fukcja_ruchu_NOL(
     interval = 0.1  # 100 ms Dyskretny odztęp czasowy w celu unikęcia chazardu i niezawidnośći sprszętu fizycznego. Wiem że ten przedział przeba zrobić jaknajmniejszy w celu uliepszenia działania systemu i zbliżenia go do systemu analogowego.
     next_time = time.time()
 
+    #tworzenie ejdnostki BP
+    JEDNOSTKA_BRONI_PALNEJ = BP()
+
+
     while True:
+        MAIN_TARGET = None
+        MAIN_TARGET = funkcja_wyszukiwania_najblizszego_objektu_odnosnie_polozenia_BP(lista_NOL)
+        Point_alfa = (MAIN_TARGET.get_X(), MAIN_TARGET.get_Y(), MAIN_TARGET.get_Z())
         Zmiana_poolozenia()
+        Point_omega = (MAIN_TARGET.get_X(), MAIN_TARGET.get_Y(), MAIN_TARGET.get_Z())
+
         next_time += interval
         sleep_time = next_time - time.time()
         if sleep_time > 0:
@@ -446,7 +476,7 @@ if __name__ == "__main__":
         MAX_list_lenhgt_is)  # DUŻY NAPIS ZMIENNEJ ZBIORU EKZEMPLARÓW KLASY NOL OZANCZA ŻE TO GŁÓWNA KLASA NAD KTÓRĄ BĘDĄ PRZEPROWADZANA OPERACJE
     insert_value_to_objekts_in_list_of_NOL(
         LIST_OF_NOL)  # losowe podanie parametrów w pewnych przedziałach wyznaczonych wychodząc z założeń logichnych i ogrwaniczeń szwiata rzeczywistego.
-    print(LIST_OF_NOL)
+    LIST_OF_NOL[0].get_all_parameters()
     for objekt in LIST_OF_NOL:  # pętla do przypisywania typu do objektów
         funkcja_analizy_i_przypisywanie_typu_do_ekzemplarow_objektow_w_zbiorze_NOL(objekt)
     print(f"ilość objektów przed sortowaniem = {len(LIST_OF_NOL)}")
@@ -457,8 +487,7 @@ if __name__ == "__main__":
 
     SEPARATED_LIST_OF_NOL = seperate_list_of_NOL(LIST_OF_NOL, MAX_threads_in_sysytem)
 
-    print(
-        f"LISTA_OF_NOL została podzielona na {MAX_threads_in_sysytem} przedziałów w każdym jest +-{len(SEPARATED_LIST_OF_NOL[0])} objektów ")
+    print(        f"LISTA_OF_NOL została podzielona na {MAX_threads_in_sysytem} przedziałów w każdym jest +-{len(SEPARATED_LIST_OF_NOL[0])} objektów ")
 
     # Lista_aktywnych_procesow = []
     # for number_of_thread in range(0, MAX_threads_in_sysytem):
