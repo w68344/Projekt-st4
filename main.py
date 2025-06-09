@@ -205,21 +205,29 @@ class NOL:
 
 
 class BP:
-    def __init__(self, maksymalna_distancja_robocza, predkosc_puli, ilosc_strszaluw_na_sekunde, ilosc_pul_w_magazynie,
-                 czas_naladowania_magazynu, kierunek_X, kierunek_Y, kierunek_Z, predkosc_porusznia, damge_per_strszal):
-        # bazując na najbardziej rozpowszechnionym modelu BP instalowanym na okrętcie wójskowym "phalanx CIWS (Block 1b)" z niego wżęto patanetry BP
-        self.maksymalna_distancja_robocza = 2000  # m
-        self.predkosc_puli = 1100  # m/s
-        self.ilosc_strszaluw_na_sekunde = 4000  # strsz/s
-        self.ilosc_pul_w_magazynie = 2000
-        self.czas_naladowania_magazynu = 5  # sekund
-        self.damge_per_strszal = 5  # teoretyczny parametr dla wizualizacji zadanego obrażenia który będzie odejmowany od Ilości życia NOLSZ
-        # początkowy kierunek lufy działa będzie pionowo w góre
-        self.kierunek_X = 0  # m
-        self.kierunek_Y = 0  # m
-        self.kierunek_Z = 0  # m
-        # maksymalna prędkość z którą może obracać BP woków siebie
-        self.predkosc_porusznia = 100  # stopień/s       czyli za 3.6 sekundy BP zrobi pełny obrót woków śiebie w pożiomie. Zakładam że prędkość obrotowa w poziomie rówma pędkości w pionie.
+    def __init__(
+            self,
+            maksymalna_distancja_robocza,  # m — maksymalna odległość działania BP
+            predkosc_puli,  # m/s — prędkość pocisku
+            ilosc_strszaluw_na_sekunde,  # strzałów/s — szybkostrzelność
+            ilosc_pul_w_magazynie,  # liczba pocisków w magazynie
+            czas_naladowania_magazynu,  # sekund — czas przeładowania
+            kierunek_X,  # m — początkowy kierunek lufy w osi X
+            kierunek_Y,  # m — początkowy kierunek lufy w osi Y
+            kierunek_Z,  # m — początkowy kierunek lufy w osi Z
+            predkosc_porusznia,  # stopni/s — maksymalna prędkość obrotu
+            damge_per_strszal  # jednostki — obrażenia od jednego strzału
+    ):
+        self.maksymalna_distancja_robocza = maksymalna_distancja_robocza
+        self.predkosc_puli = predkosc_puli
+        self.ilosc_strszaluw_na_sekunde = ilosc_strszaluw_na_sekunde
+        self.ilosc_pul_w_magazynie = ilosc_pul_w_magazynie
+        self.czas_naladowania_magazynu = czas_naladowania_magazynu
+        self.kierunek_X = kierunek_X
+        self.kierunek_Y = kierunek_Y
+        self.kierunek_Z = kierunek_Z
+        self.predkosc_porusznia = predkosc_porusznia
+        self.damge_per_strszal = damge_per_strszal
 
 
 # fukcja do tworzenia zbiorów NOL
@@ -228,7 +236,7 @@ class BP:
 # W moim systemie ja nie robie ogólnego API do sterowania jednostką BP i nie buduję system z myślą o zmieanie algorytmu pryoritetu aktaku na NOLSZ. jednostka będzie strzelać w najbliższy NOLSZ dopóki tę nie będzie zniszczony oraz nie będzie za daleko
 # funkcja do wyszukiwania nawbliższego NOLSZ
 def funkcja_wyszukiwania_najblizszego_objektu_odnosnie_polozenia_BP(lista_NOL_po_sortowaniu_na_osobne_procesy
-                                                            ):
+                                                                    ):
     robocza_lista = lista_NOL_po_sortowaniu_na_osobne_procesy
     closest_object = None
     min_distance = float('inf')
@@ -241,9 +249,6 @@ def funkcja_wyszukiwania_najblizszego_objektu_odnosnie_polozenia_BP(lista_NOL_po
             closest_object = obj
     # print(f"Najbliższy objekt do punktu X=0 Y=0 Z=0 to {closest_object} który ma parametry: X={closest_object.X} Y={closest_object.Y} Z={closest_object.Z}")
     return closest_object
-
-
-
 
 
 def create_list_of_NOL(amount_NOL: int):
@@ -299,14 +304,43 @@ def insert_value_to_objekts_in_list_of_NOL(lista_z_objektami_NOL: list):
                 (objekt.get_dludosc() * objekt.get_szerokosc()) * random.uniform(0.2, 1))  # m^2
 
 
+def funkcja_do_skierowania_BP_do_wybranego_celu_i_strzelanie_kolejka_kul(Main_target, punkt_alfa: list,
+                                                                         punkt_omega: list, Jednostka_BP: object):
+    NOLSZ_zniszczono = False
+    future_X = punkt_omega[0] + (punkt_omega[0] - punkt_alfa[0])
+    future_Y = punkt_omega[1] + (punkt_omega[1] - punkt_alfa[1])
+    future_Z = punkt_omega[2] + (punkt_omega[2] - punkt_alfa[2])
+    Jednostka_BP.X = future_X
+    Jednostka_BP.Y = future_Y
+    Jednostka_BP.Z = future_Z
+    # tutaj robie bardzo szybką pętle zgodnie z wskazaną prędkoścą strzelania w przedziale onowienia dannych w poniższym module "while true"
+    end_time = time.perf_counter() + 0.09
+    while time.perf_counter() < end_time:
+        # tutaj robimy strszał
+        if Jednostka_BP.ilosc_pul_w_magazynie > 0:
+            Jednostka_BP.ilosc_pul_w_magazynie -= 1
+            print("Piiiiiiiiiiiiiiuuuuuu")
+            # dodanie losowości do strzelanie ponieważ nie zawsze można trafić w NOLSZ
+            if random.choice([True, False]):
+                print(f"jest trafienie w objekt{Main_target}")
+                if Main_target.get_odpornosc_na_bron() > 0:
+                    Main_target.set_odpornosc_na_bron(
+                        Main_target.get_odpornosc_na_bron() - Jednostka_BP.damge_per_strszal)
+                    print(f"objekt {Main_target} został całkowicie zniszczony!")
+                    break
 
-
-
-def funkcja_do_skierowania_BP_do_wybranego_celu(Main_target, punkt_alfa:list, punkt_omega:list):
+                else:
+                    NOLSZ_zniszczono = True
+        else:
+            print("Czekam 5s na załadowanie magazynu")
+            time.sleep(5)
+            Jednostka_BP.ilosc_pul_w_magazynie = 20000
+    print("Oczered is patronow zakonczilas")
+    return NOLSZ_zniszczono
 
 
 # funkcja do opracowania i symulacji przemieszczenia objektów w przesztrzeni powietrznej dokoła położenia BP które domyszlnie jest ustawione jako położenie X;Y;Z = 0;0;0;
-
+# zmiana zawartości funkcjonalności funkcji teraz ta funkcja jest głównym zbiorczym wejściem do programu w celu podzielenia programu na kilka wątków ręcznie w module __main__
 def fukcja_ruchu_NOL(
         lista_NOL: list):  # funkcja jest obliczona tak że liczy zmiane położenia o co 0.1s w zależności od parametrów NOL
     # validacja podanej listy
@@ -322,6 +356,17 @@ def fukcja_ruchu_NOL(
                 # print(lista_NOL[valid_index].get_all_parameters())
     else:
         print("Error in function fukcja_ruchu_NOL")
+
+
+    #blok separowania NOLSZ od NOL "dobrych"
+    for objekt in lista_NOL:  # pętla do przypisywania typu do objektów
+        funkcja_analizy_i_przypisywanie_typu_do_ekzemplarow_objektow_w_zbiorze_NOL(objekt)
+    print(f"ilość objektów przed sortowaniem = {len(lista_NOL)}")
+    for objekt in lista_NOL:  # pętla do usuwania "dobrych" NOL żeby zostały tylko NOLSZ
+        if objekt.get_typ() == "dobry":
+            lista_NOL.remove(objekt)
+    print(f"ilość objektów po usunięciu \"dobrych\" objektów = {len(lista_NOL)}")
+
 
     def Zmiana_poolozenia():
         # funkcja zmiany położenia NOL w przedziale 0.1s
@@ -342,25 +387,54 @@ def fukcja_ruchu_NOL(
     interval = 0.1  # 100 ms Dyskretny odztęp czasowy w celu unikęcia chazardu i niezawidnośći sprszętu fizycznego. Wiem że ten przedział przeba zrobić jaknajmniejszy w celu uliepszenia działania systemu i zbliżenia go do systemu analogowego.
     next_time = time.time()
 
-    #tworzenie ejdnostki BP
-    JEDNOSTKA_BRONI_PALNEJ = BP()
+    # tworzenie ejdnostki BP
+    JEDNOSTKA_BRONI_PALNEJ = BP(
+        maksymalna_distancja_robocza=20000,
+        predkosc_puli=1100,
+        ilosc_strszaluw_na_sekunde=4000,
+        ilosc_pul_w_magazynie=20000,
+        czas_naladowania_magazynu=5,
+        kierunek_X=0,
+        kierunek_Y=0,
+        kierunek_Z=0,
+        predkosc_porusznia=100,
+        damge_per_strszal=5
+    )
 
-
-    while True:
+    # główna pętla z prędkoścą oprecowania około 0.1s zgodnie z maksymalną prędkoścą nadchodzenia dannych teoretycznie od lokatora
+    while len(lista_NOL) > 0:
+        Czy_NOLSZ_zniszczono = False
         MAIN_TARGET = None
         MAIN_TARGET = funkcja_wyszukiwania_najblizszego_objektu_odnosnie_polozenia_BP(lista_NOL)
-        Point_alfa = (MAIN_TARGET.get_X(), MAIN_TARGET.get_Y(), MAIN_TARGET.get_Z())
-        Zmiana_poolozenia()
-        Point_omega = (MAIN_TARGET.get_X(), MAIN_TARGET.get_Y(), MAIN_TARGET.get_Z())
+        while Czy_NOLSZ_zniszczono != True:
 
-        next_time += interval
-        sleep_time = next_time - time.time()
-        if sleep_time > 0:
-            time.sleep(sleep_time)
-        else:
-            # technizny print w celu wyłapywania niezdołności systemu z powodu nieoptymalizcji lub nizkiej częstotliwości taktowania procesora.
-            print("Timer stracono")
-            next_time = time.time()
+            # sprawdzam czy odległość do celu nie za duża
+            if math.sqrt(
+                    MAIN_TARGET.get_X() ** 2 + MAIN_TARGET.get_Y() ** 2 + MAIN_TARGET.get_Z()) < JEDNOSTKA_BRONI_PALNEJ.maksymalna_distancja_robocza:
+                Point_alfa = [MAIN_TARGET.get_X(), MAIN_TARGET.get_Y(), MAIN_TARGET.get_Z()]
+                Zmiana_poolozenia()
+                Point_omega = [MAIN_TARGET.get_X(), MAIN_TARGET.get_Y(), MAIN_TARGET.get_Z()]
+                Czy_NOLSZ_zniszczono = funkcja_do_skierowania_BP_do_wybranego_celu_i_strzelanie_kolejka_kul(MAIN_TARGET,
+                                                                                                            Point_alfa,
+                                                                                                            Point_omega,
+                                                                                                            JEDNOSTKA_BRONI_PALNEJ)
+                if Czy_NOLSZ_zniszczono:
+                    lista_NOL.remove(MAIN_TARGET)
+
+                next_time += interval
+                sleep_time = next_time - time.time()
+                if sleep_time > 0:
+                    time.sleep(sleep_time)
+                else:
+                    # technizny print w celu wyłapywania niezdołności systemu z powodu nieoptymalizcji lub nizkiej częstotliwości taktowania procesora.
+                    print("Timer stracono")
+                    next_time = time.time()
+            else:
+                print("Objekt poza obszarem pracy jednostki BP sprobujemy zlaleść inny")
+                # dla wyjścia z podwójni włożonej pętli zmieniam klucz na True żeby zmienić czel na najbliższy w rażie kiedy tę będzie niedostępny
+                Czy_NOLSZ_zniszczono = True
+
+    print("WSZYSTKIE NOLSZ ZOSTAŁY ZNISZCZONE W WWYBRANYM WĄTKU!!!")
 
 
 # funkcja analizy NOL i przypisanie typu do NOL. Klasyfikator będzie bardzo prosty i będzie klasyfikował tylko na 2 typy "dobry" "NIE dobry". Nie będzie
@@ -464,9 +538,9 @@ if __name__ == "__main__":
     # MAX_list_lenhgt_is = test_max_list_size()  # Tęn wiersz jest czenścą programu ale polecam go zakomentowac jeżeli nie ma na to beżpośredniego zapotrzebowania ponieważ na niewydajnych kompóterach może potrwać od kilku minut do kilku dni. Kod został dostosowany do braku tego parametru i domuszlnie podejrzewano że maksymalna długość listy to 10**4 składającej z ekzemplarów klasów. Podany program został przetestowany na komputerze z procesorem "Ryzen Threadripper 7980X" + 512Gbt RAM ddr5 RDIMM z ECC sk hyniX OC Windows Server i maksymalnie uzyskana wartość to MAX_list_lenhgt_is == 2 012 936 090 biórác pod uwagé że taka metoda nie optymalna ale ma większą precyzyjność i prostsza w walidacji. Oczywiście można by było używać bazy dannuch takiej jak SQLite i wtedy zależność od pamięcia operacyjnej nie będzie taka istotna
     # MAX_threads_in_sysytem_V1 = test_max_thread_in_system_V1()
     # MAX_threads_in_sysytem_V2 = run_stress_test_V2() # Tęn wiersz jest czenścą programu ale polecam go zakomentowac jeżeli nie ma na to beżpośredniego zapotrzebowania ponieważ na niewydajnych kompóterach może potrwać od kilku minut do kilku dni. Kod został dostosowany do braku tego parametru i domuszlnie podejrzewano że maksymalna ilość procesów może być od 15 do 20. Podany program został przetestowany na komputerze z procesorem "Ryzen Threadripper 7980X" + 512Gbt RAM ddr5 RDIMM z ECC sk hyniX OC Windows Server i maksymalnie uzyskana wartość to MMAX_threads_in_sysytem_V2 == 45 407 biórác pod uwagé że taka metoda nie optymalna i wydajność zmiejsza po uzyskaniu 128 procesów ponieważ processor ma 128 osobnych wątków pozostałe procesy są wykonywane przez przerywanie z użyciem "infinity fabrik" AMD(r).
-    MAX_threads_in_sysytem_V2 = 20
-    MAX_threads_in_sysytem_V1 = 20
-    MAX_list_lenhgt_is = 2000
+    MAX_threads_in_sysytem_V2 = 100
+    MAX_threads_in_sysytem_V1 = 100
+    MAX_list_lenhgt_is = 50000
     print(f"Maksymalna dugość listy NOL: {MAX_list_lenhgt_is}")
     MAX_threads_in_sysytem = min(MAX_threads_in_sysytem_V1, MAX_threads_in_sysytem_V2)
     print(f"Maksymalna ilość osobnych wątków dostempnych w obecnie używanym systemie: {MAX_threads_in_sysytem}")
@@ -476,28 +550,24 @@ if __name__ == "__main__":
         MAX_list_lenhgt_is)  # DUŻY NAPIS ZMIENNEJ ZBIORU EKZEMPLARÓW KLASY NOL OZANCZA ŻE TO GŁÓWNA KLASA NAD KTÓRĄ BĘDĄ PRZEPROWADZANA OPERACJE
     insert_value_to_objekts_in_list_of_NOL(
         LIST_OF_NOL)  # losowe podanie parametrów w pewnych przedziałach wyznaczonych wychodząc z założeń logichnych i ogrwaniczeń szwiata rzeczywistego.
-    LIST_OF_NOL[0].get_all_parameters()
-    for objekt in LIST_OF_NOL:  # pętla do przypisywania typu do objektów
-        funkcja_analizy_i_przypisywanie_typu_do_ekzemplarow_objektow_w_zbiorze_NOL(objekt)
-    print(f"ilość objektów przed sortowaniem = {len(LIST_OF_NOL)}")
-    for objekt in LIST_OF_NOL:  # pętla do usuwania "dobrych" NOL żeby zostały tylko NOLSZ
-        if objekt.get_typ() == "dobry":
-            LIST_OF_NOL.remove(objekt)
-    print(f"ilość objektów po usunięciu \"dobrych\" objektów = {len(LIST_OF_NOL)}")
+    # LIST_OF_NOL[0].get_all_parameters()
+
 
     SEPARATED_LIST_OF_NOL = seperate_list_of_NOL(LIST_OF_NOL, MAX_threads_in_sysytem)
 
-    print(        f"LISTA_OF_NOL została podzielona na {MAX_threads_in_sysytem} przedziałów w każdym jest +-{len(SEPARATED_LIST_OF_NOL[0])} objektów ")
+    print(
+        f"LISTA_OF_NOL została podzielona na {MAX_threads_in_sysytem} przedziałów w każdym jest +-{len(SEPARATED_LIST_OF_NOL[0])} objektów ")
 
-    # Lista_aktywnych_procesow = []
-    # for number_of_thread in range(0, MAX_threads_in_sysytem):
-    #     proces = multiprocessing.Process(target=fukcja_ruchu_NOL, args=(SEPARATED_LIST_OF_NOL[number_of_thread],))
-    #     Lista_aktywnych_procesow.append(proces)
-    #     proces.start()
-    #     print(f"proces number {number_of_thread}, z PID = {proces.pid} was started now")
-    #
-    # time.sleep(60)
-    # for p in Lista_aktywnych_procesow:
-    #     print(f"Proces zakonczono PID={p.pid}")
-    #     p.terminate()
-    #     p.join()
+    Lista_aktywnych_procesow = []
+    for number_of_thread in range(0, MAX_threads_in_sysytem):
+        proces = multiprocessing.Process(target=fukcja_ruchu_NOL, args=(SEPARATED_LIST_OF_NOL[number_of_thread],))
+        Lista_aktywnych_procesow.append(proces)
+        proces.start()
+        print(f"proces number {number_of_thread}, z PID = {proces.pid} was started now")
+
+    time.sleep(50)
+    for p in Lista_aktywnych_procesow:
+        print(f"Proces zakonczono PID={p.pid}")
+        p.terminate()
+        p.join()
+    # fukcja_ruchu_NOL(SEPARATED_LIST_OF_NOL[0])
