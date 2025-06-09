@@ -200,8 +200,36 @@ class NOL:
         else:
             print("Error in function set_obecnosc_broni")
 
-
+class BP:
+    def __init__(self, predkosc_puli, ilosc_strszaluw_na_sekunde, ilosc_pul_w_magazynie, czas_naladowania_magazynu, kierunek_X, kierunek_Y, kierunek_Z, predkosc_porusznia):
+        #bazując na najbardziej rozpowszechnionym modelu BP instalowanym na okrętcie wójskowym "phalanx CIWS (Block 1b)" z niego wżęto patanetry BP
+        self.predkosc_puli = 1100 #m/s
+        self.ilosc_strszaluw_na_sekunde = 4000 #strsz/s
+        self.ilosc_pul_w_magazynie = 2000
+        self.czas_naladowania_magazynu = 5 #sekund
+        #początkowy kierunek lufy działa będzie pionowo w góre
+        self.kierunek_X = 0
+        self.kierunek_Y = 0
+        self.kierunek_Z = 0
+        #maksymalna prędkość z którą może obracać BP woków siebie
+        self.predkosc_porusznia = 100 #stopień/s       czyli za 3.6 sekundy BP zrobi pełny obrót woków śiebie w pożiomie. Zakładam że prędkość obrotowa w poziomie rówma pędkości w pionie.
 # fukcja do tworzenia zbiorów NOL
+
+def funkcja_wyszukiwania_najblizszego_objektu_odnosnie_polozenia_BP(lista_NOL_po_sortowaniu_na_osobne_procesy,number_of_thread : int):
+    robocza_lista = lista_NOL_po_sortowaniu_na_osobne_procesy[number_of_thread]
+    closest_object = None
+    min_distance = float('inf')  # Начинаем с бесконечно большого расстояния
+
+    for obj in robocza_lista:
+        # Вычисляем расстояние до точки (0, 0, 0)
+        distance = math.sqrt(obj.X ** 2 + obj.Y ** 2 + obj.Z ** 2)
+
+        # Если нашли объект ближе — обновляем
+        if distance < min_distance:
+            min_distance = distance
+            closest_object = obj
+    # print(f"Najbliższy objekt do punktu X=0 Y=0 Z=0 to {closest_object} który ma parametry: X={closest_object.X} Y={closest_object.Y} Z={closest_object.Z}")
+    return closest_object
 
 def create_list_of_NOL(amount_NOL: int):
     List_of_NOL = []
@@ -300,8 +328,8 @@ def fukcja_ruchu_NOL(
         if sleep_time > 0:
             time.sleep(sleep_time)
         else:
-            # technizny prin w celu wyłapywania niezdołności systemu z powodu nieoptymalizcji lub nizkiej częstotliwości taktowania procesora.
-            print("⚠️ Timer was droped!")
+            # technizny print w celu wyłapywania niezdołności systemu z powodu nieoptymalizcji lub nizkiej częstotliwości taktowania procesora.
+            print("Timer stracono")
             next_time = time.time()
 
 
@@ -316,7 +344,7 @@ def funkcja_analizy_i_przypisywanie_typu_do_ekzemplarow_objektow_w_zbiorze_NOL(o
 
 
 # funkcja do wypisywania przedziałów dla podania jako parametry w nastempnych funkcjach
-def seperated_list_of_NOL(my_list: list, threads: int):
+def seperate_list_of_NOL(my_list: list, threads: int):
     k, m = divmod(len(my_list), threads)
     return [my_list[i * k + min(i, m):(i + 1) * k + min(i + 1, m)] for i in range(threads)]
 
@@ -406,9 +434,9 @@ if __name__ == "__main__":
     # MAX_list_lenhgt_is = test_max_list_size()  # Tęn wiersz jest czenścą programu ale polecam go zakomentowac jeżeli nie ma na to beżpośredniego zapotrzebowania ponieważ na niewydajnych kompóterach może potrwać od kilku minut do kilku dni. Kod został dostosowany do braku tego parametru i domuszlnie podejrzewano że maksymalna długość listy to 10**4 składającej z ekzemplarów klasów. Podany program został przetestowany na komputerze z procesorem "Ryzen Threadripper 7980X" + 512Gbt RAM ddr5 RDIMM z ECC sk hyniX OC Windows Server i maksymalnie uzyskana wartość to MAX_list_lenhgt_is == 2 012 936 090 biórác pod uwagé że taka metoda nie optymalna ale ma większą precyzyjność i prostsza w walidacji. Oczywiście można by było używać bazy dannuch takiej jak SQLite i wtedy zależność od pamięcia operacyjnej nie będzie taka istotna
     # MAX_threads_in_sysytem_V1 = test_max_thread_in_system_V1()
     # MAX_threads_in_sysytem_V2 = run_stress_test_V2() # Tęn wiersz jest czenścą programu ale polecam go zakomentowac jeżeli nie ma na to beżpośredniego zapotrzebowania ponieważ na niewydajnych kompóterach może potrwać od kilku minut do kilku dni. Kod został dostosowany do braku tego parametru i domuszlnie podejrzewano że maksymalna ilość procesów może być od 15 do 20. Podany program został przetestowany na komputerze z procesorem "Ryzen Threadripper 7980X" + 512Gbt RAM ddr5 RDIMM z ECC sk hyniX OC Windows Server i maksymalnie uzyskana wartość to MMAX_threads_in_sysytem_V2 == 45 407 biórác pod uwagé że taka metoda nie optymalna i wydajność zmiejsza po uzyskaniu 128 procesów ponieważ processor ma 128 osobnych wątków pozostałe procesy są wykonywane przez przerywanie z użyciem "infinity fabrik" AMD(r).
-    MAX_threads_in_sysytem_V2 = 14
-    MAX_threads_in_sysytem_V1 = 14
-    MAX_list_lenhgt_is = 20000
+    MAX_threads_in_sysytem_V2 = 20
+    MAX_threads_in_sysytem_V1 = 20
+    MAX_list_lenhgt_is = 2000
     print(f"Maksymalna dugość listy NOL: {MAX_list_lenhgt_is}")
     MAX_threads_in_sysytem = min(MAX_threads_in_sysytem_V1, MAX_threads_in_sysytem_V2)
     print(f"Maksymalna ilość osobnych wątków dostempnych w obecnie używanym systemie: {MAX_threads_in_sysytem}")
@@ -417,28 +445,30 @@ if __name__ == "__main__":
     LIST_OF_NOL = create_list_of_NOL(
         MAX_list_lenhgt_is)  # DUŻY NAPIS ZMIENNEJ ZBIORU EKZEMPLARÓW KLASY NOL OZANCZA ŻE TO GŁÓWNA KLASA NAD KTÓRĄ BĘDĄ PRZEPROWADZANA OPERACJE
     insert_value_to_objekts_in_list_of_NOL(
-        LIST_OF_NOL)  # losowe podanie parametrów w pewnych przedziałach wyznaczonych wychodząc z założeń logichnych i ograniczeń szwiata rzeczywistego.
+        LIST_OF_NOL)  # losowe podanie parametrów w pewnych przedziałach wyznaczonych wychodząc z założeń logichnych i ogrwaniczeń szwiata rzeczywistego.
+    print(LIST_OF_NOL)
     for objekt in LIST_OF_NOL:  # pętla do przypisywania typu do objektów
         funkcja_analizy_i_przypisywanie_typu_do_ekzemplarow_objektow_w_zbiorze_NOL(objekt)
     print(f"ilość objektów przed sortowaniem = {len(LIST_OF_NOL)}")
-    for objekt in LIST_OF_NOL: #pętla do usuwania "dobrych" NOL żeby zostały tylko NOLSZ
+    for objekt in LIST_OF_NOL:  # pętla do usuwania "dobrych" NOL żeby zostały tylko NOLSZ
         if objekt.get_typ() == "dobry":
             LIST_OF_NOL.remove(objekt)
     print(f"ilość objektów po usunięciu \"dobrych\" objektów = {len(LIST_OF_NOL)}")
 
-    SEPARATED_LIST_OF_NOL = seperated_list_of_NOL(LIST_OF_NOL, MAX_threads_in_sysytem)
+    SEPARATED_LIST_OF_NOL = seperate_list_of_NOL(LIST_OF_NOL, MAX_threads_in_sysytem)
 
-    print(f"LISTA_OF_NOL została podzielona na {MAX_threads_in_sysytem} przedziałów w każdym jest +-{len(SEPARATED_LIST_OF_NOL[0])} objektów ")
+    print(
+        f"LISTA_OF_NOL została podzielona na {MAX_threads_in_sysytem} przedziałów w każdym jest +-{len(SEPARATED_LIST_OF_NOL[0])} objektów ")
 
-    Lista_aktywnych_procesow = []
-    for number_of_thread in range(0, MAX_threads_in_sysytem):
-        proces = multiprocessing.Process(target=fukcja_ruchu_NOL, args=(SEPARATED_LIST_OF_NOL[number_of_thread],))
-        Lista_aktywnych_procesow.append(proces)
-        proces.start()
-        print(f"proces number {number_of_thread}, z PID = {proces.pid} was started now")
-
-    time.sleep(120)
-    for p in Lista_aktywnych_procesow:
-        print(f"Proces zakonczono PID={p.pid}")
-        p.terminate()
-        p.join()
+    # Lista_aktywnych_procesow = []
+    # for number_of_thread in range(0, MAX_threads_in_sysytem):
+    #     proces = multiprocessing.Process(target=fukcja_ruchu_NOL, args=(SEPARATED_LIST_OF_NOL[number_of_thread],))
+    #     Lista_aktywnych_procesow.append(proces)
+    #     proces.start()
+    #     print(f"proces number {number_of_thread}, z PID = {proces.pid} was started now")
+    #
+    # time.sleep(60)
+    # for p in Lista_aktywnych_procesow:
+    #     print(f"Proces zakonczono PID={p.pid}")
+    #     p.terminate()
+    #     p.join()
