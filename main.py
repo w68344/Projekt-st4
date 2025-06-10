@@ -4,8 +4,6 @@ import multiprocessing
 import math
 import time
 
-from fontTools.pens.basePen import NullPen
-from pydantic_core.core_schema import none_schema
 
 
 # sekcja ręcznie stwożonych funcij do walidacji
@@ -332,7 +330,7 @@ def funkcja_do_skierowania_BP_do_wybranego_celu_i_strzelanie_kolejka_kul(Main_ta
                 else:
                     NOLSZ_zniszczono = True
             else:
-                print("Nie udało się trafić w objekt{Main_target}")
+                print(f"Nie udało się trafić w objekt{Main_target}")
         else:
             print("Czekam 5s na załadowanie magazynu")
             time.sleep(5)
