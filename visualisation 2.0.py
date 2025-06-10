@@ -2,7 +2,7 @@ import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 
 
-def animate_nol_movement(nol_list, steps=500, interval=100):
+def animate_nol_movement(nol_list, steps=50, interval=10):
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
 

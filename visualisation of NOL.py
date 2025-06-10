@@ -6,7 +6,7 @@ from mpl_toolkits.mplot3d import Axes3D
 
 # Параметры
 num_balls = 2000
-space_size = 2500
+space_size = 10000
 max_radius = 0.00001
 step_size = 10  # Максимальное перемещение за 1 шаг
 
@@ -35,6 +35,6 @@ def update(frame):
     return scat,
 
 # Анимация
-ani = FuncAnimation(fig, update, frames=200, interval=10, blit=False)
+ani = FuncAnimation(fig, update, frames=20, interval=10, blit=False)
 plt.show()
 
